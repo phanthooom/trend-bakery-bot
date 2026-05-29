@@ -59,19 +59,27 @@ export default function MapPage() {
         `
         document.head.appendChild(hideStyle)
 
-        const reverseGeocode = (center: number[]) => {
-          window.ymaps
-            .geocode(center, { results: 1 })
-            .then((res: any) => {
-              const obj = res.geoObjects.get(0)
-              const name = obj
-                ? (obj.getAddressLine?.() || obj.properties?.get('text') || null)
-                : null
-              if (name) {
-                setDetectedAddress(name)
-              }
-              setCoords(center as [number, number])
-            })
+        const reverseGeocode = async (center: number[]) => {
+          const [lat, lon] = center
+          setCoords([lat, lon])
+          try {
+            const resp = await fetch(
+              `https://geocode-maps.yandex.ru/1.x/?apikey=${YANDEX_API_KEY}&geocode=${lon},${lat}&format=json&results=1&lang=ru_RU`
+            )
+            const data = await resp.json()
+            const members = data?.response?.GeoObjectCollection?.featureMember
+            if (members?.length > 0) {
+              const text = members[0]?.GeoObject?.metaDataProperty?.GeocoderMetaData?.text
+              if (text) { setDetectedAddress(text); return }
+            }
+          } catch {}
+          // fallback: ymaps.geocode
+          try {
+            const res = await window.ymaps.geocode(center, { results: 1 })
+            const obj = res.geoObjects.get(0)
+            const name = obj?.getAddressLine?.() || obj?.properties?.get('text')
+            if (name) setDetectedAddress(name)
+          } catch {}
         }
 
         // Initial geocode
