@@ -169,14 +169,21 @@ export default function MapPage() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <div className="relative flex-1">
-        {/* Back button */}
+        {/* Geolocation button */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            navigator.geolocation.getCurrentPosition((pos) => {
+              const c: [number, number] = [pos.coords.latitude, pos.coords.longitude]
+              ymapsRef.current?.setCenter(c, 16, { duration: 300 })
+            })
+          }}
           style={{ top: btnTop }}
           className="absolute left-4 z-20 bg-white rounded-xl w-12 h-12 flex items-center justify-center shadow-md"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="12" cy="12" r="3" fill="#C8102E" />
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="#C8102E" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="12" cy="12" r="7" stroke="#C8102E" strokeWidth="1.5" />
           </svg>
         </button>
 
