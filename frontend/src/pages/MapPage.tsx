@@ -61,14 +61,16 @@ export default function MapPage() {
 
         const reverseGeocode = (center: number[]) => {
           window.ymaps
-            .geocode(center, { results: 1, kind: 'house' })
+            .geocode(center, { results: 1 })
             .then((res: any) => {
               const obj = res.geoObjects.get(0)
-              if (obj) {
-                const name = obj.getAddressLine()
+              const name = obj
+                ? (obj.getAddressLine?.() || obj.properties?.get('text') || null)
+                : null
+              if (name) {
                 setDetectedAddress(name)
-                setCoords(center as [number, number])
               }
+              setCoords(center as [number, number])
             })
         }
 
