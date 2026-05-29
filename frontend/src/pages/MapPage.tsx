@@ -62,6 +62,27 @@ export default function MapPage() {
         const reverseGeocode = async (center: number[]) => {
           const [lat, lon] = center
           setCoords([lat, lon])
+
+          // Primary: Nominatim (OpenStreetMap) — no API key required
+          try {
+            const resp = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+              { headers: { 'Accept-Language': 'ru' } }
+            )
+            if (resp.ok) {
+              const data = await resp.json()
+              const a = data?.address
+              if (a) {
+                const road = a.road || a.pedestrian || a.neighbourhood || a.suburb || ''
+                const house = a.house_number ? ` ${a.house_number}` : ''
+                const city = a.city || a.town || a.village || 'Ташкент'
+                const text = road ? `${road}${house}, ${city}` : (data.display_name || '')
+                if (text) { setDetectedAddress(text); return }
+              }
+            }
+          } catch {}
+
+          // Fallback: Yandex REST geocoder
           try {
             const url = new URL('https://geocode-maps.yandex.ru/v1/')
             url.searchParams.set('apikey', YANDEX_API_KEY)
@@ -77,7 +98,8 @@ export default function MapPage() {
               if (text) { setDetectedAddress(text); return }
             }
           } catch {}
-          // fallback: ymaps.geocode
+
+          // Final fallback: ymaps.geocode
           try {
             const res = await window.ymaps.geocode(center, { results: 1 })
             const obj = res.geoObjects.get(0)
