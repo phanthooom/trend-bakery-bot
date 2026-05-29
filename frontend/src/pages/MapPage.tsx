@@ -49,6 +49,16 @@ export default function MapPage() {
 
         ymapsRef.current = map
 
+        // Hide native Yandex branding/links
+        const hideStyle = document.createElement('style')
+        hideStyle.textContent = `
+          .ymaps-2-1-79-copyright,
+          [class*="ymaps-"][class*="-copyright"],
+          [class*="ymaps-"][class*="-logo"],
+          [class*="ymaps-"][class*="-gotoymaps"] { display: none !important; }
+        `
+        document.head.appendChild(hideStyle)
+
         const reverseGeocode = (center: number[]) => {
           window.ymaps
             .geocode(center, { results: 1, kind: 'house' })
@@ -210,14 +220,44 @@ export default function MapPage() {
           </button>
         </div>
 
-        {/* Fixed center pin (decorative, map moves under it) */}
+        {/* Geolocation button — bottom-right */}
+        <button
+          onClick={() => {
+            navigator.geolocation.getCurrentPosition((pos) => {
+              const c: [number, number] = [pos.coords.latitude, pos.coords.longitude]
+              ymapsRef.current?.setCenter(c, 16, { duration: 300 })
+            })
+          }}
+          className="absolute bottom-4 right-4 z-20 bg-white rounded-xl w-12 h-12 flex items-center justify-center shadow-md"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#1a1a1a">
+            <path d="M12 8l-4 8 4-2 4 2-4-8z"/>
+            <path d="M12 2v2M12 20v2M2 12h2M20 12h2" stroke="#1a1a1a" strokeWidth="1.5" strokeLinecap="round"/>
+            <circle cx="12" cy="12" r="3" stroke="#1a1a1a" strokeWidth="1.5" fill="none"/>
+          </svg>
+        </button>
+
+        {/* "Открыть Яндекс Карты" custom pill — bottom-left */}
+        <a
+          href={`https://yandex.uz/maps/?ll=${coords[1]},${coords[0]}&z=15`}
+          target="_blank"
+          rel="noreferrer"
+          className="absolute bottom-4 left-4 z-20 bg-white rounded-xl px-3 h-10 flex items-center gap-2 shadow-md text-sm font-medium text-gray-900"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#C8102E">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          Открыть в Яндекс Картах
+        </a>
+
+        {/* Fixed center pin — dark square with delivery person */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-10 pointer-events-none">
-          <div className="w-8 h-8 bg-[#C8102E] rounded-full flex items-center justify-center shadow-lg">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+          <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center shadow-lg">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+              <path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/>
             </svg>
           </div>
-          <div className="w-1 h-3 bg-[#C8102E] mx-auto rounded-b" />
+          <div className="w-1.5 h-3 bg-gray-900 mx-auto rounded-b" />
         </div>
       </div>
 
