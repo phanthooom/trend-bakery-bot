@@ -46,6 +46,10 @@ export default function ServiceTypeModal({ onClose }: Props) {
     setDeliveryType('pickup')
     setAddress({
       street: pickupAddress,
+      apartment: '',
+      intercom: '',
+      entrance: '',
+      floor: '',
       lat: PICKUP_LAT,
       lng: PICKUP_LON,
     })
