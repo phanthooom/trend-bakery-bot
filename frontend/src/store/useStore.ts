@@ -1,0 +1,76 @@
+import { create } from 'zustand'
+
+export interface Product {
+  id: number
+  name: string
+  description: string
+  price: number
+  image: string
+  category: 'home' | 'retail'
+}
+
+export interface CartItem extends Product {
+  quantity: number
+}
+
+export interface Address {
+  street: string
+  apartment: string
+  intercom: string
+  entrance: string
+  floor: string
+  lat?: number
+  lng?: number
+}
+
+interface Store {
+  cart: CartItem[]
+  address: Address | null
+  deliveryType: 'delivery' | 'pickup'
+  addToCart: (product: Product) => void
+  removeFromCart: (id: number) => void
+  updateQuantity: (id: number, delta: number) => void
+  setAddress: (address: Address) => void
+  setDeliveryType: (type: 'delivery' | 'pickup') => void
+  cartTotal: () => number
+  cartCount: () => number
+}
+
+export const useStore = create<Store>((set, get) => ({
+  cart: [],
+  address: null,
+  deliveryType: 'delivery',
+
+  addToCart: (product) => {
+    set((state) => {
+      const existing = state.cart.find((i) => i.id === product.id)
+      if (existing) {
+        return {
+          cart: state.cart.map((i) =>
+            i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+          ),
+        }
+      }
+      return { cart: [...state.cart, { ...product, quantity: 1 }] }
+    })
+  },
+
+  removeFromCart: (id) => {
+    set((state) => ({ cart: state.cart.filter((i) => i.id !== id) }))
+  },
+
+  updateQuantity: (id, delta) => {
+    set((state) => {
+      const updated = state.cart
+        .map((i) => (i.id === id ? { ...i, quantity: i.quantity + delta } : i))
+        .filter((i) => i.quantity > 0)
+      return { cart: updated }
+    })
+  },
+
+  setAddress: (address) => set({ address }),
+  setDeliveryType: (type) => set({ deliveryType: type }),
+
+  cartTotal: () => get().cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
+  cartCount: () => get().cart.reduce((sum, i) => sum + i.quantity, 0),
+}))
