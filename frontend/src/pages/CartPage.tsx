@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
+import { useSafeArea } from '../context/SafeAreaContext'
 import WebApp from '@twa-dev/sdk'
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, cartTotal, address } = useStore()
+  const { top: safeTop } = useSafeArea()
   const navigate = useNavigate()
 
   const formatPrice = (price: number) => price.toLocaleString('ru-RU') + ' сум'
@@ -44,7 +46,7 @@ export default function CartPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-36">
-      <div className="px-4 pt-4 pb-3 bg-white border-b border-gray-100">
+      <div className="px-4 pb-3 bg-white border-b border-gray-100" style={{ paddingTop: `${safeTop + 16}px` }}>
         <h1 className="font-bold text-xl text-gray-900">Корзина</h1>
       </div>
 

@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
+import { useSafeArea } from '../context/SafeAreaContext'
 import { products } from '../data/products'
 import ProductCard from '../components/ProductCard'
 
 export default function MenuPage() {
   const [category, setCategory] = useState<'home' | 'retail'>('home')
   const { address, deliveryType, setDeliveryType } = useStore()
+  const { top: safeTop } = useSafeArea()
   const navigate = useNavigate()
 
   const filtered = products.filter((p) => p.category === category)
@@ -14,7 +16,10 @@ export default function MenuPage() {
   return (
     <div className="flex flex-col min-h-screen bg-white pb-20">
       {/* Header */}
-      <div className="px-4 pt-4 pb-2 bg-white sticky top-0 z-40 border-b border-gray-100">
+      <div
+        className="px-4 pb-2 bg-white sticky top-0 z-40 border-b border-gray-100"
+        style={{ paddingTop: `${safeTop + 12}px` }}
+      >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <img

@@ -1,15 +1,17 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
+import { useSafeArea } from '../context/SafeAreaContext'
 import WebApp from '@twa-dev/sdk'
 
 export default function ProfilePage() {
   const { address } = useStore()
+  const { top: safeTop } = useSafeArea()
   const navigate = useNavigate()
   const user = WebApp.initDataUnsafe?.user
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-20">
-      <div className="px-4 pt-4 pb-3 bg-white border-b border-gray-100">
+      <div className="px-4 pb-3 bg-white border-b border-gray-100" style={{ paddingTop: `${safeTop + 16}px` }}>
         <h1 className="font-bold text-xl text-gray-900">Профиль</h1>
       </div>
 
