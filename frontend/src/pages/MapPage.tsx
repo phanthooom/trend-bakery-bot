@@ -1,14 +1,26 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { useSafeArea } from '../context/SafeAreaContext'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+
+declare global {
+  interface Window {
+    ymaps: any
+  }
+}
+
+const YANDEX_API_KEY = '50b9437f-9dfc-41e7-b94f-d4003982c4c4'
+const TASHKENT = [41.299496, 69.279737]
 
 export default function MapPage() {
   const navigate = useNavigate()
   const { setAddress } = useStore()
   const { top: safeTop } = useSafeArea()
   const [step, setStep] = useState<'map' | 'form'>('map')
-  const [selectedStreet, setSelectedStreet] = useState('улица М. Рахимова')
+  const [detectedAddress, setDetectedAddress] = useState('Определяем адрес...')
+  const [coords, setCoords] = useState<[number, number]>(TASHKENT as [number, number])
+  const mapRef = useRef<HTMLDivElement>(null)
+  const ymapsRef = useRef<any>(null)
 
   const [form, setForm] = useState({
     apartment: '',
@@ -17,18 +29,84 @@ export default function MapPage() {
     floor: '',
   })
 
+  const btnTop = `max(${safeTop + 12}px, calc(env(safe-area-inset-top) + 12px))`
+
+  useEffect(() => {
+    if (step !== 'map') return
+
+    const scriptId = 'yandex-maps-script'
+    const existing = document.getElementById(scriptId)
+
+    const initMap = () => {
+      window.ymaps.ready(() => {
+        if (!mapRef.current) return
+
+        const map = new window.ymaps.Map(mapRef.current, {
+          center: TASHKENT,
+          zoom: 15,
+          controls: ['geolocationControl', 'zoomControl'],
+        })
+
+        ymapsRef.current = map
+
+        const reverseGeocode = (center: number[]) => {
+          window.ymaps
+            .geocode(center, { results: 1, kind: 'house' })
+            .then((res: any) => {
+              const obj = res.geoObjects.get(0)
+              if (obj) {
+                const name = obj.getAddressLine()
+                setDetectedAddress(name)
+                setCoords(center as [number, number])
+              }
+            })
+        }
+
+        // Initial geocode
+        reverseGeocode(TASHKENT)
+
+        // On every map move end — geocode center
+        map.events.add('actionend', () => {
+          const center = map.getCenter()
+          reverseGeocode(center)
+        })
+      })
+    }
+
+    if (existing) {
+      if (window.ymaps) initMap()
+      else existing.addEventListener('load', initMap)
+    } else {
+      const script = document.createElement('script')
+      script.id = scriptId
+      script.src = `https://api-maps.yandex.ru/2.1/?apikey=${YANDEX_API_KEY}&lang=ru_RU`
+      script.async = true
+      script.onload = initMap
+      document.head.appendChild(script)
+    }
+
+    return () => {
+      ymapsRef.current?.destroy?.()
+      ymapsRef.current = null
+    }
+  }, [step])
+
+  const handleSaveMap = () => {
+    setStep('form')
+  }
+
   const handleSaveAddress = () => {
     setAddress({
-      street: selectedStreet,
+      street: detectedAddress,
       apartment: form.apartment,
       intercom: form.intercom,
       entrance: form.entrance,
       floor: form.floor,
+      lat: coords[0],
+      lng: coords[1],
     })
     navigate(-1)
   }
-
-  const btnTop = `${safeTop + 12}px`
 
   if (step === 'form') {
     return (
@@ -38,14 +116,14 @@ export default function MapPage() {
           style={{ paddingTop: `max(${safeTop + 16}px, calc(env(safe-area-inset-top) + 16px))` }}
         >
           <h1 className="font-bold text-xl text-gray-900">Добавить новый адрес</h1>
-          <p className="text-gray-500 text-sm mt-1">{selectedStreet}</p>
+          <p className="text-gray-500 text-sm mt-1 truncate">{detectedAddress}</p>
         </div>
 
-        <div className="px-4 pt-6 flex flex-col gap-4 flex-1">
+        <div className="px-4 pt-6 flex flex-col gap-3 flex-1">
           <input
-            value={selectedStreet}
-            onChange={(e) => setSelectedStreet(e.target.value)}
-            placeholder="улица М. Рахимова"
+            value={detectedAddress}
+            onChange={(e) => setDetectedAddress(e.target.value)}
+            placeholder="Адрес"
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#C8102E]"
           />
           <div className="grid grid-cols-2 gap-3">
@@ -91,59 +169,37 @@ export default function MapPage() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <div className="relative flex-1">
-        {/* Back button — below Telegram header */}
+        {/* Back button */}
         <button
           onClick={() => navigate(-1)}
           style={{ top: btnTop }}
-          className="absolute left-4 z-10 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
+          className="absolute left-4 z-20 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
 
-        {/* Search button */}
-        <button
-          style={{ top: btnTop }}
-          className="absolute right-4 z-10 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
-            <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </button>
+        {/* Map container */}
+        <div ref={mapRef} className="w-full h-full min-h-[calc(100vh-80px)]" />
 
-        {/* Yandex Maps iframe */}
-        <iframe
-          src="https://yandex.uz/map-widget/v1/?ll=69.279737%2C41.299496&z=14&l=map"
-          width="100%"
-          height="100%"
-          className="w-full h-full min-h-[calc(100vh-80px)]"
-          style={{ border: 'none' }}
-          title="Яндекс Карты"
-        />
-
-        {/* Center pin */}
+        {/* Fixed center pin (decorative, map moves under it) */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-10 pointer-events-none">
-          <div className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center shadow-lg">
+          <div className="w-8 h-8 bg-[#C8102E] rounded-full flex items-center justify-center shadow-lg">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
             </svg>
           </div>
-          <div className="w-0.5 h-4 bg-gray-900 mx-auto" />
-        </div>
-
-        {/* Zoom controls */}
-        <div className="absolute right-4 bottom-32 flex flex-col gap-1 z-10">
-          <button className="bg-white w-9 h-9 flex items-center justify-center shadow-md rounded text-xl font-light text-gray-700">+</button>
-          <button className="bg-white w-9 h-9 flex items-center justify-center shadow-md rounded text-xl font-light text-gray-700">−</button>
+          <div className="w-1 h-3 bg-[#C8102E] mx-auto rounded-b" />
         </div>
       </div>
 
-      {/* Save button */}
-      <div className="px-4 py-4 bg-white">
+      {/* Address bar + Save button */}
+      <div className="px-4 pt-3 pb-6 bg-white border-t border-gray-100">
+        <p className="text-xs text-gray-400 mb-1">Адрес доставки</p>
+        <p className="text-sm font-semibold text-gray-900 mb-3 truncate">{detectedAddress}</p>
         <button
-          onClick={() => setStep('form')}
+          onClick={handleSaveMap}
           className="w-full bg-[#C8102E] text-white py-4 rounded-xl font-bold text-base"
         >
           Сохранить
