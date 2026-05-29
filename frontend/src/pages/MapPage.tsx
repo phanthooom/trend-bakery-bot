@@ -44,7 +44,7 @@ export default function MapPage() {
         const map = new window.ymaps.Map(mapRef.current, {
           center: TASHKENT,
           zoom: 15,
-          controls: ['geolocationControl', 'zoomControl'],
+          controls: ['zoomControl'],
         })
 
         ymapsRef.current = map
