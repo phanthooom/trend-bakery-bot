@@ -63,13 +63,17 @@ export default function MapPage() {
           const [lat, lon] = center
           setCoords([lat, lon])
           try {
-            const resp = await fetch(
-              `https://geocode-maps.yandex.ru/1.x/?apikey=${YANDEX_API_KEY}&geocode=${lon},${lat}&format=json&results=1&lang=ru_RU`
-            )
-            const data = await resp.json()
-            const members = data?.response?.GeoObjectCollection?.featureMember
-            if (members?.length > 0) {
-              const text = members[0]?.GeoObject?.metaDataProperty?.GeocoderMetaData?.text
+            const url = new URL('https://geocode-maps.yandex.ru/v1/')
+            url.searchParams.set('apikey', YANDEX_API_KEY)
+            url.searchParams.set('geocode', `${lon},${lat}`)
+            url.searchParams.set('lang', 'ru_RU')
+            url.searchParams.set('format', 'json')
+            url.searchParams.set('results', '1')
+            const resp = await fetch(url.toString(), { cache: 'no-store' })
+            if (resp.ok) {
+              const data = await resp.json()
+              const item = data?.response?.GeoObjectCollection?.featureMember?.[0]?.GeoObject
+              const text = item?.metaDataProperty?.GeocoderMetaData?.text || item?.name
               if (text) { setDetectedAddress(text); return }
             }
           } catch {}
@@ -85,10 +89,13 @@ export default function MapPage() {
         // Initial geocode
         reverseGeocode(TASHKENT)
 
-        // On every map move end — geocode center
+        // On every map move end — debounced 380ms (pharmaclick pattern)
+        let debounceTimer: ReturnType<typeof setTimeout>
         map.events.add('actionend', () => {
-          const center = map.getCenter()
-          reverseGeocode(center)
+          clearTimeout(debounceTimer)
+          debounceTimer = setTimeout(() => {
+            reverseGeocode(map.getCenter())
+          }, 380)
         })
       })
     }
