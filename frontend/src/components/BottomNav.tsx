@@ -11,10 +11,19 @@ export default function BottomNav() {
       path: '/',
       label: 'Меню',
       icon: (active: boolean) => (
+        // Receipt / menu-card icon
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="5" width="18" height="2" rx="1" fill={active ? '#C8102E' : '#9ca3af'} />
-          <rect x="3" y="11" width="18" height="2" rx="1" fill={active ? '#C8102E' : '#9ca3af'} />
-          <rect x="3" y="17" width="18" height="2" rx="1" fill={active ? '#C8102E' : '#9ca3af'} />
+          <path
+            d="M6 2h12a1 1 0 011 1v16.5l-1.5-.75-1.5.75-1.5-.75-1.5.75-1.5-.75-1.5.75-1.5-.75-1.5.75V3a1 1 0 011-1z"
+            stroke={active ? '#C8102E' : '#9ca3af'}
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+            fill={active ? '#C8102E' : 'none'}
+            fillOpacity={active ? 0.08 : 0}
+          />
+          <line x1="9" y1="8" x2="15" y2="8" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="9" y1="12" x2="15" y2="12" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="9" y1="16" x2="12" y2="16" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       ),
     },
@@ -23,10 +32,17 @@ export default function BottomNav() {
       label: 'Корзина',
       icon: (active: boolean) => (
         <div className="relative">
+          {/* Shopping cart icon */}
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <line x1="3" y1="6" x2="21" y2="6" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="2" strokeLinecap="round" />
-            <path d="M16 10a4 4 0 01-8 0" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"
+              stroke={active ? '#C8102E' : '#9ca3af'}
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <line x1="3" y1="6" x2="21" y2="6" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M16 10a4 4 0 01-8 0" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           {cartCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-[#C8102E] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
@@ -41,8 +57,13 @@ export default function BottomNav() {
       label: 'Профиль',
       icon: (active: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="12" cy="7" r="4" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="12" cy="8" r="4" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="1.5" />
+          <path
+            d="M4 20c0-4 3.6-7 8-7s8 3 8 7"
+            stroke={active ? '#C8102E' : '#9ca3af'}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
         </svg>
       ),
     },
