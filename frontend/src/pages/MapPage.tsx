@@ -173,9 +173,9 @@ export default function MapPage() {
         <button
           onClick={() => navigate(-1)}
           style={{ top: btnTop }}
-          className="absolute left-4 z-20 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
+          className="absolute left-4 z-20 bg-white rounded-xl w-12 h-12 flex items-center justify-center shadow-md"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -183,16 +183,16 @@ export default function MapPage() {
         {/* Search button */}
         <button
           style={{ top: btnTop }}
-          className="absolute right-4 z-20 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
+          className="absolute right-4 z-20 bg-white rounded-xl w-12 h-12 flex items-center justify-center shadow-md"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
             <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
             <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </button>
 
         {/* Map container */}
-        <div ref={mapRef} className="w-full h-full min-h-[calc(100vh-80px)]" />
+        <div ref={mapRef} className="w-full h-full min-h-[calc(100vh-90px)]" />
 
         {/* Fixed center pin (decorative, map moves under it) */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-10 pointer-events-none">
@@ -205,13 +205,11 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Address bar + Save button */}
-      <div className="px-4 pt-3 pb-6 bg-white border-t border-gray-100">
-        <p className="text-xs text-gray-400 mb-1">Адрес доставки</p>
-        <p className="text-sm font-semibold text-gray-900 mb-3 truncate">{detectedAddress}</p>
+      {/* Save button */}
+      <div className="px-4 pt-3 pb-6 bg-white">
         <button
           onClick={handleSaveMap}
-          className="w-full bg-[#C8102E] text-white py-4 rounded-xl font-bold text-base"
+          className="w-full bg-[#C8102E] text-white py-5 rounded-2xl font-bold text-base"
         >
           Сохранить
         </button>
