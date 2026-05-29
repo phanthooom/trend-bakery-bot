@@ -180,6 +180,17 @@ export default function MapPage() {
           </svg>
         </button>
 
+        {/* Search button */}
+        <button
+          style={{ top: btnTop }}
+          className="absolute right-4 z-20 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+            <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
+
         {/* Map container */}
         <div ref={mapRef} className="w-full h-full min-h-[calc(100vh-80px)]" />
 
