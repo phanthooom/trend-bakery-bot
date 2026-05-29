@@ -58,12 +58,12 @@ export default function ServiceTypeModal({ onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40" />
 
       {/* Card */}
-      <div className="relative w-full bg-white rounded-t-3xl px-6 pt-6 pb-10">
+      <div className="relative w-full bg-white rounded-3xl px-6 pt-6 pb-8">
 
         {step === 'select' && (
           <>
