@@ -5,7 +5,7 @@ import WebApp from '@twa-dev/sdk'
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, cartTotal, address } = useStore()
-  const { top: safeTop } = useSafeArea()
+  const { top: safeTop, bottom: safeBottom } = useSafeArea()
   const navigate = useNavigate()
 
   const formatPrice = (price: number) => price.toLocaleString('ru-RU') + ' сум'
@@ -45,7 +45,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-36">
+    <div className="flex flex-col min-h-screen bg-gray-50 pb-48">
       <div className="px-4 pb-3 bg-white border-b border-gray-100" style={{ paddingTop: `max(${safeTop + 16}px, calc(env(safe-area-inset-top) + 16px))` }}>
         <h1 className="font-bold text-xl text-gray-900">Корзина</h1>
       </div>
@@ -108,7 +108,10 @@ export default function CartPage() {
       </div>
 
       {/* Total + Order button */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3">
+      <div
+        className="fixed left-0 right-0 bg-white border-t border-gray-100 px-4 py-3"
+        style={{ bottom: `max(${safeBottom + 56}px, calc(env(safe-area-inset-bottom) + 56px))` }}
+      >
         <div className="flex items-center justify-between mb-3">
           <span className="text-gray-500">Итого:</span>
           <span className="font-bold text-gray-900 text-lg">{formatPrice(cartTotal())}</span>
