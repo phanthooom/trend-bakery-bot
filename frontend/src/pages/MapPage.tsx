@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
+import { useSafeArea } from '../context/SafeAreaContext'
 import { useState } from 'react'
 
 export default function MapPage() {
   const navigate = useNavigate()
   const { setAddress } = useStore()
+  const { top: safeTop } = useSafeArea()
   const [step, setStep] = useState<'map' | 'form'>('map')
   const [selectedStreet, setSelectedStreet] = useState('улица М. Рахимова')
 
@@ -26,10 +28,15 @@ export default function MapPage() {
     navigate(-1)
   }
 
+  const btnTop = `${safeTop + 12}px`
+
   if (step === 'form') {
     return (
       <div className="flex flex-col min-h-screen bg-white">
-        <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+        <div
+          className="px-4 pb-3 border-b border-gray-100"
+          style={{ paddingTop: `max(${safeTop + 16}px, calc(env(safe-area-inset-top) + 16px))` }}
+        >
           <h1 className="font-bold text-xl text-gray-900">Добавить новый адрес</h1>
           <p className="text-gray-500 text-sm mt-1">{selectedStreet}</p>
         </div>
@@ -83,18 +90,23 @@ export default function MapPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {/* Map placeholder */}
       <div className="relative flex-1">
+        {/* Back button — below Telegram header */}
         <button
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-10 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
+          style={{ top: btnTop }}
+          className="absolute left-4 z-10 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
 
-        <button className="absolute top-4 right-4 z-10 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md">
+        {/* Search button */}
+        <button
+          style={{ top: btnTop }}
+          className="absolute right-4 z-10 bg-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
             <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -106,7 +118,7 @@ export default function MapPage() {
           src="https://yandex.uz/map-widget/v1/?ll=69.279737%2C41.299496&z=14&l=map"
           width="100%"
           height="100%"
-          className="w-full h-full min-h-[calc(100vh-120px)]"
+          className="w-full h-full min-h-[calc(100vh-80px)]"
           style={{ border: 'none' }}
           title="Яндекс Карты"
         />
