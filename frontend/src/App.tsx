@@ -6,6 +6,7 @@ import CartPage from './pages/CartPage'
 import ProfilePage from './pages/ProfilePage'
 import MapPage from './pages/MapPage'
 import BottomNav from './components/BottomNav'
+import ServiceTypeModal from './components/ServiceTypeModal'
 
 type TwaExtended = {
   ready?: () => void
@@ -22,6 +23,9 @@ type TwaExtended = {
 export default function App() {
   const [safeTop, setSafeTop] = useState(0)
   const [safeBottom, setSafeBottom] = useState(0)
+  const [showServiceModal, setShowServiceModal] = useState(
+    () => !localStorage.getItem('tb_service_selected')
+  )
 
   useEffect(() => {
     const wa = (window as unknown as { Telegram?: { WebApp?: TwaExtended } })
@@ -69,6 +73,9 @@ export default function App() {
   return (
     <SafeAreaContext.Provider value={{ top: safeTop, bottom: safeBottom }}>
       <BrowserRouter>
+        {showServiceModal && (
+          <ServiceTypeModal onClose={() => setShowServiceModal(false)} />
+        )}
         <Routes>
           <Route path="/map" element={<MapPage />} />
           <Route
