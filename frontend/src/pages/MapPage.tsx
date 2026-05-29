@@ -194,6 +194,22 @@ export default function MapPage() {
         {/* Map container */}
         <div ref={mapRef} className="w-full h-full min-h-[calc(100vh-90px)]" />
 
+        {/* Zoom controls */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col bg-white rounded-xl shadow-md overflow-hidden">
+          <button
+            onClick={() => ymapsRef.current?.setZoom(ymapsRef.current.getZoom() + 1, { duration: 200 })}
+            className="w-12 h-12 flex items-center justify-center text-2xl text-gray-700 border-b border-gray-100 active:bg-gray-50"
+          >
+            +
+          </button>
+          <button
+            onClick={() => ymapsRef.current?.setZoom(ymapsRef.current.getZoom() - 1, { duration: 200 })}
+            className="w-12 h-12 flex items-center justify-center text-2xl text-gray-700 active:bg-gray-50"
+          >
+            −
+          </button>
+        </div>
+
         {/* Fixed center pin (decorative, map moves under it) */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-10 pointer-events-none">
           <div className="w-8 h-8 bg-[#C8102E] rounded-full flex items-center justify-center shadow-lg">
