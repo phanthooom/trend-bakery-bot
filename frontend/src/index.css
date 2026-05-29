@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+:root {
+  --safe-top: 0px;
+  --safe-bottom: 0px;
+}
+
 * {
   -webkit-tap-highlight-color: transparent;
   box-sizing: border-box;

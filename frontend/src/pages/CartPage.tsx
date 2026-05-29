@@ -46,7 +46,7 @@ export default function CartPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-36">
-      <div className="px-4 pb-3 bg-white border-b border-gray-100" style={{ paddingTop: `${safeTop + 16}px` }}>
+      <div className="px-4 pb-3 bg-white border-b border-gray-100" style={{ paddingTop: `max(${safeTop + 16}px, calc(env(safe-area-inset-top) + 16px))` }}>
         <h1 className="font-bold text-xl text-gray-900">Корзина</h1>
       </div>
 
