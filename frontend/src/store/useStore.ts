@@ -43,6 +43,9 @@ interface Store {
   setPhone: (phone: string) => void
   cartTotal: () => number
   cartCount: () => number
+  products: Product[]
+  isLoadingProducts: boolean
+  fetchProducts: () => Promise<void>
 }
 
 export const useStore = create<Store>()(
@@ -54,6 +57,20 @@ export const useStore = create<Store>()(
       deliveryType: 'delivery',
       language: 'ru',
       phone: '+998',
+      products: [],
+      isLoadingProducts: false,
+
+      fetchProducts: async () => {
+        set({ isLoadingProducts: true })
+        try {
+          const res = await fetch('/api/products')
+          const data = await res.json()
+          set({ products: data, isLoadingProducts: false })
+        } catch (error) {
+          console.error('Failed to fetch products', error)
+          set({ isLoadingProducts: false })
+        }
+      },
 
       addToCart: (product) => {
         set((state) => {

@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useStore } from '../store/useStore'
 import { useSafeArea } from '../context/SafeAreaContext'
-import { products } from '../data/products'
 import { type Product } from '../store/useStore'
 import ProductCard from '../components/ProductCard'
 import ProductBottomSheet from '../components/ProductBottomSheet'
@@ -22,8 +21,13 @@ export default function MenuPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isAddressesOpen, setIsAddressesOpen] = useState(false)
-  const { address, deliveryType, setDeliveryType } = useStore()
+  const { address, deliveryType, setDeliveryType, products, isLoadingProducts, fetchProducts } = useStore()
   const { top: safeTop } = useSafeArea()
+
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
   const { t } = useTranslation()
 
   const filtered = products.filter((p) => {
@@ -179,8 +183,18 @@ export default function MenuPage() {
           {category === 'home' ? t('home') : t('retail')}
         </h2>
 
+        {isLoadingProducts && (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#C8102E]"></div>
+          </div>
+        )}
+
         {/* Products */}
-        {filtered.map((product) => (
+        {!isLoadingProducts && filtered.length === 0 && (
+          <div className="text-center text-gray-500 py-12">Ничего не найдено</div>
+        )}
+        
+        {!isLoadingProducts && filtered.map((product) => (
           <ProductCard 
             key={product.id} 
             product={product} 

@@ -1,0 +1,8 @@
+{
+  "name": "trend-bakery-bot-root",
+  "private": true,
+  "dependencies": {
+    "@vercel/blob": "^0.23.2",
+    "@neondatabase/serverless": "^0.9.3"
+  }
+}

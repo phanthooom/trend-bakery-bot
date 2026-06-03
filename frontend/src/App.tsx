@@ -6,6 +6,7 @@ import CartPage from './pages/CartPage'
 import ProfilePage from './pages/ProfilePage'
 import MapPage from './pages/MapPage'
 import CheckoutPage from './pages/CheckoutPage'
+import { AdminPage } from './pages/AdminPage'
 import BottomNav from './components/BottomNav'
 import ServiceTypeModal from './components/ServiceTypeModal'
 
@@ -79,6 +80,7 @@ export default function App() {
         )}
         <Routes>
           <Route path="/map" element={<MapPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route
             path="*"
             element={
