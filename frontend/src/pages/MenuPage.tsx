@@ -6,6 +6,7 @@ import { products } from '../data/products'
 import { type Product } from '../store/useStore'
 import ProductCard from '../components/ProductCard'
 import ProductBottomSheet from '../components/ProductBottomSheet'
+import DeliveryDropdown from '../components/DeliveryDropdown'
 
 export default function MenuPage() {
   const [category, setCategory] = useState<'home' | 'retail'>('home')
@@ -71,14 +72,10 @@ export default function MenuPage() {
             </div>
           </button>
 
-          <select
+          <DeliveryDropdown
             value={deliveryType}
-            onChange={(e) => setDeliveryType(e.target.value as 'delivery' | 'pickup')}
-            className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-white"
-          >
-            <option value="delivery">Доставка</option>
-            <option value="pickup">Самовывоз</option>
-          </select>
+            onChange={(val) => setDeliveryType(val)}
+          />
         </div>
       </div>
 
