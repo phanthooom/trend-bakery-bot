@@ -8,6 +8,7 @@ import ProductCard from '../components/ProductCard'
 import ProductBottomSheet from '../components/ProductBottomSheet'
 import DeliveryDropdown from '../components/DeliveryDropdown'
 import LanguageDropdown from '../components/LanguageDropdown'
+import AddressesBottomSheet from '../components/AddressesBottomSheet'
 import { useTranslation } from '../i18n'
 
 export default function MenuPage() {
@@ -15,6 +16,7 @@ export default function MenuPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isAddressesOpen, setIsAddressesOpen] = useState(false)
   const { address, deliveryType, setDeliveryType } = useStore()
   const { top: safeTop } = useSafeArea()
   const navigate = useNavigate()
@@ -98,16 +100,16 @@ export default function MenuPage() {
         {/* Delivery row */}
         <div className="flex items-center justify-between">
           <button
-            onClick={() => navigate('/map')}
-            className="flex items-center gap-1 text-sm"
+            onClick={() => setIsAddressesOpen(true)}
+            className="flex items-center gap-1 text-sm text-left max-w-[65%]"
           >
-            <div>
-              <div className="text-gray-500 text-xs">
+            <div className="w-full">
+              <div className="text-gray-500 text-xs truncate">
                 {deliveryType === 'delivery' ? t('deliveryTrend') : t('pickup')}
               </div>
               <div className="font-semibold text-gray-900 flex items-center gap-1">
-                {address?.street ?? t('chooseAddress')}
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <span className="truncate">{address?.street ?? t('chooseAddress')}</span>
+                <svg className="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <path d="M6 9l6 6 6-6" stroke="#C8102E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
@@ -167,12 +169,17 @@ export default function MenuPage() {
         ))}
       </div>
 
-      {/* Bottom Sheet Modal */}
+      {/* Product Bottom Sheet */}
       {selectedProduct && (
         <ProductBottomSheet 
           product={selectedProduct} 
           onClose={() => setSelectedProduct(null)} 
         />
+      )}
+
+      {/* Addresses Bottom Sheet */}
+      {isAddressesOpen && (
+        <AddressesBottomSheet onClose={() => setIsAddressesOpen(false)} />
       )}
     </div>
   )

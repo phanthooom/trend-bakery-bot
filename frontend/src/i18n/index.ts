@@ -17,6 +17,8 @@ const translations = {
     total: 'Итого',
     checkout: 'Оформить заказ',
     currency: 'сум',
+    myAddresses: 'Мои адреса',
+    addNewAddress: 'Добавить новый адрес',
   },
   uz: {
     home: 'Uy uchun',
@@ -34,6 +36,8 @@ const translations = {
     total: 'Jami',
     checkout: 'Buyurtma berish',
     currency: "so'm",
+    myAddresses: 'Mening manzillarim',
+    addNewAddress: 'Yangi manzil qo\'shish',
   },
   en: {
     home: 'For Home',
@@ -51,6 +55,8 @@ const translations = {
     total: 'Total',
     checkout: 'Checkout',
     currency: 'sum',
+    myAddresses: 'My Addresses',
+    addNewAddress: 'Add new address',
   }
 } as const
 

@@ -14,7 +14,7 @@ const TASHKENT = [41.299496, 69.279737]
 
 export default function MapPage() {
   const navigate = useNavigate()
-  const { setAddress } = useStore()
+  const { setAddress, addSavedAddress } = useStore()
   const { top: safeTop } = useSafeArea()
   const [step, setStep] = useState<'map' | 'form'>('map')
   const [detectedAddress, setDetectedAddress] = useState('Определяем адрес...')
@@ -145,7 +145,8 @@ export default function MapPage() {
   }
 
   const handleSaveAddress = () => {
-    setAddress({
+    const newAddr = {
+      id: Date.now().toString(),
       street: detectedAddress,
       apartment: form.apartment,
       intercom: form.intercom,
@@ -153,7 +154,9 @@ export default function MapPage() {
       floor: form.floor,
       lat: coords[0],
       lng: coords[1],
-    })
+    }
+    setAddress(newAddr)
+    addSavedAddress(newAddr)
     navigate(-1)
   }
 

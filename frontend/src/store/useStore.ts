@@ -14,6 +14,7 @@ export interface CartItem extends Product {
 }
 
 export interface Address {
+  id?: string
   street: string
   apartment: string
   intercom: string
@@ -26,12 +27,15 @@ export interface Address {
 interface Store {
   cart: CartItem[]
   address: Address | null
+  savedAddresses: Address[]
   deliveryType: 'delivery' | 'pickup'
   language: 'ru' | 'uz' | 'en'
   addToCart: (product: Product) => void
   removeFromCart: (id: number) => void
   updateQuantity: (id: number, delta: number) => void
   setAddress: (address: Address) => void
+  addSavedAddress: (address: Address) => void
+  removeSavedAddress: (id: string) => void
   setDeliveryType: (type: 'delivery' | 'pickup') => void
   setLanguage: (lang: 'ru' | 'uz' | 'en') => void
   cartTotal: () => number
@@ -41,6 +45,7 @@ interface Store {
 export const useStore = create<Store>((set, get) => ({
   cart: [],
   address: null,
+  savedAddresses: [],
   deliveryType: 'delivery',
   language: 'ru',
 
@@ -72,6 +77,14 @@ export const useStore = create<Store>((set, get) => ({
   },
 
   setAddress: (address) => set({ address }),
+  addSavedAddress: (address) => set((state) => ({ savedAddresses: [address, ...state.savedAddresses] })),
+  removeSavedAddress: (id) => set((state) => {
+    const newSaved = state.savedAddresses.filter(a => a.id !== id);
+    return {
+      savedAddresses: newSaved,
+      address: state.address?.id === id ? (newSaved[0] || null) : state.address
+    }
+  }),
   setDeliveryType: (type) => set({ deliveryType: type }),
   setLanguage: (lang) => set({ language: lang }),
 
