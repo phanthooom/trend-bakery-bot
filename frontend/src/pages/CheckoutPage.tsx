@@ -36,6 +36,13 @@ export default function CheckoutPage() {
       comment
     }
 
+    // В Telegram WebApp функция sendData работает ТОЛЬКО если апп открыт через Reply Keyboard (нижнее меню).
+    // Если она не срабатывает, Телеграм игнорирует вызов. Добавим предупреждение:
+    if (WebApp.initDataUnsafe?.query_id) {
+      WebApp.showAlert('Внимание: Вы открыли магазин через кнопку в чате. Отправка заказа работает только если открыть магазин через кнопку в нижнем меню (возле поля ввода сообщения). Пожалуйста, перезапустите бота командой /start и нажмите кнопку внизу!')
+      return
+    }
+
     WebApp.sendData(JSON.stringify(orderData))
   }
 
