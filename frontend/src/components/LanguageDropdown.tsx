@@ -23,8 +23,6 @@ export default function LanguageDropdown() {
     { code: 'en', label: 'EN' },
   ]
 
-  const activeLang = languages.find((l) => l.code === language) || languages[0]
-
   return (
     <div className="relative" ref={ref}>
       <button
