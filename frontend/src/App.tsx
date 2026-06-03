@@ -5,6 +5,7 @@ import MenuPage from './pages/MenuPage'
 import CartPage from './pages/CartPage'
 import ProfilePage from './pages/ProfilePage'
 import MapPage from './pages/MapPage'
+import CheckoutPage from './pages/CheckoutPage'
 import BottomNav from './components/BottomNav'
 import ServiceTypeModal from './components/ServiceTypeModal'
 
@@ -85,6 +86,7 @@ export default function App() {
                 <Routes>
                   <Route path="/" element={<MenuPage />} />
                   <Route path="/cart" element={<CartPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                 </Routes>
                 <BottomNav />

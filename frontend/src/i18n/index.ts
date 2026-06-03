@@ -19,6 +19,12 @@ const translations = {
     currency: 'сум',
     myAddresses: 'Мои адреса',
     addNewAddress: 'Добавить новый адрес',
+    phone: 'Номер телефона',
+    paymentMethod: 'Способ оплаты',
+    cash: 'Наличными',
+    card: 'Картой',
+    comment: 'Комментарий к заказу',
+    commentPlaceholder: 'Например: не звонить в дверь, спит ребенок...',
   },
   uz: {
     home: 'Uy uchun',
@@ -38,6 +44,12 @@ const translations = {
     currency: "so'm",
     myAddresses: 'Mening manzillarim',
     addNewAddress: 'Yangi manzil qo\'shish',
+    phone: 'Telefon raqami',
+    paymentMethod: 'To\'lov usuli',
+    cash: 'Naqd pul',
+    card: 'Karta orqali',
+    comment: 'Buyurtmaga izoh',
+    commentPlaceholder: 'Masalan: eshikni qo\'ng\'iroq qilmang...',
   },
   en: {
     home: 'For Home',
@@ -57,6 +69,12 @@ const translations = {
     currency: 'sum',
     myAddresses: 'My Addresses',
     addNewAddress: 'Add new address',
+    phone: 'Phone number',
+    paymentMethod: 'Payment method',
+    cash: 'Cash',
+    card: 'Card',
+    comment: 'Order comment',
+    commentPlaceholder: 'E.g. do not ring the doorbell...',
   }
 } as const
 

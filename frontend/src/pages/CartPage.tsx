@@ -15,14 +15,7 @@ export default function CartPage() {
       navigate('/map')
       return
     }
-    WebApp.sendData(
-      JSON.stringify({
-        type: 'order',
-        items: cart,
-        total: cartTotal(),
-        address,
-      })
-    )
+    navigate('/checkout')
   }
 
   if (cart.length === 0) {

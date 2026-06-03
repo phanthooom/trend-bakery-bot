@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
 load_dotenv()
 
@@ -20,12 +20,15 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def start(message: types.Message):
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(
-            text="🥐 Открыть магазин",
-            web_app=WebAppInfo(url=WEBAPP_URL)
-        )]
-    ])
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(
+                text="🥐 Открыть магазин",
+                web_app=WebAppInfo(url=WEBAPP_URL)
+            )]
+        ],
+        resize_keyboard=True
+    )
     await message.answer(
         "Добро пожаловать в <b>Trend Bakery</b>! 🍞\n\n"
         "Свежая выпечка с доставкой по Ташкенту.\n"
@@ -49,11 +52,20 @@ async def handle_order(message: types.Message):
     items = data.get("items", [])
     total = data.get("total", 0)
     address = data.get("address", {})
+    phone = data.get("phone", "не указан")
+    payment = data.get("payment", "не указан")
+    comment = data.get("comment", "")
 
     user = message.from_user
     lines = [f"🛒 <b>Новый заказ</b>"]
     lines.append(f"👤 {user.full_name} (@{user.username or 'нет'})")
-    lines.append(f"📍 {address.get('street', 'не указан')}")
+    lines.append(f"📞 Телефон: {phone}")
+    lines.append(f"💳 Оплата: {'Наличными' if payment == 'cash' else 'Картой'}")
+    
+    if comment:
+        lines.append(f"💬 Комментарий: <i>{comment}</i>")
+        
+    lines.append(f"\n📍 Адрес: {address.get('street', 'не указан')}")
     if address.get("apartment"):
         lines.append(f"   Кв. {address['apartment']}, эт. {address.get('floor', '?')}, подъезд {address.get('entrance', '?')}")
     lines.append("")
