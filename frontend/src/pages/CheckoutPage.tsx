@@ -6,12 +6,11 @@ import WebApp from '@twa-dev/sdk'
 import { useTranslation } from '../i18n'
 
 export default function CheckoutPage() {
-  const { cart, cartTotal, address } = useStore()
+  const { cart, cartTotal, address, phone, setPhone } = useStore()
   const { top: safeTop, bottom: safeBottom } = useSafeArea()
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const [phone, setPhone] = useState('')
   const [payment, setPayment] = useState<'cash' | 'card'>('cash')
   const [comment, setComment] = useState('')
 
@@ -124,7 +123,7 @@ export default function CheckoutPage() {
       {/* Submit Order */}
       <div
         className="fixed left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 z-50"
-        style={{ bottom: `max(${safeBottom}px, calc(env(safe-area-inset-bottom)))` }}
+        style={{ bottom: `max(${safeBottom + 56}px, calc(env(safe-area-inset-bottom) + 56px))` }}
       >
         <div className="flex items-center justify-between mb-3">
           <span className="text-gray-500">{t('total')}:</span>
