@@ -49,4 +49,12 @@ export const products: Product[] = [
     image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=800&q=80',
     category: 'home',
   },
+  {
+    id: 7,
+    name: 'Mini Хлебное ассорти',
+    description: 'Хлеб "Молочный" - 16 шт, Хлеб "Деревенский" - 16 шт, Хлеб "Злаковый" - 16 шт, Хлеб "Морковный" - 16 шт',
+    price: 230000,
+    image: '/mini-assorti.png',
+    category: 'retail',
+  },
 ]
