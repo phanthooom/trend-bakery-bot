@@ -105,13 +105,14 @@ export function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Upload failed');
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `Upload failed with status ${response.status}`);
       }
 
       const blob = await response.json();
       setFormData(prev => ({ ...prev, image: blob.url }));
-    } catch (err) {
-      alert('Ошибка при загрузке фото');
+    } catch (err: any) {
+      alert('Ошибка при загрузке фото: ' + err.message);
     } finally {
       setUploadingImage(false);
     }
