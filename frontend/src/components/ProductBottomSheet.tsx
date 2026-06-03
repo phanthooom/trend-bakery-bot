@@ -70,10 +70,34 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
           />
 
           {/* Product Info */}
-          <h2 className="font-bold text-gray-900 text-2xl mb-2">{product.name}</h2>
-          <p className="text-gray-500 text-base leading-relaxed mb-6 whitespace-pre-wrap">
-            {product.description}
-          </p>
+          <h2 className="font-bold text-gray-900 text-2xl mb-4">{product.name}</h2>
+          <div className="text-gray-600 text-sm leading-relaxed mb-6 space-y-1">
+            {product.description.split('\n').map((line, i) => {
+              const trimmed = line.trim();
+              if (!trimmed) return null;
+              
+              // Total count logic
+              if (trimmed.toLowerCase().includes('общее количество') || trimmed.toLowerCase().includes('итого')) {
+                return <p key={i} className="font-bold text-[#C8102E] mt-4 uppercase text-center text-sm">{trimmed}</p>
+              }
+              
+              // List items logic
+              if (/^\d+\./.test(trimmed)) {
+                const dotIndex = trimmed.indexOf('.');
+                const number = trimmed.substring(0, dotIndex + 1);
+                const text = trimmed.substring(dotIndex + 1).trim();
+                return (
+                  <p key={i} className="flex gap-2 text-[15px] font-medium text-[#C8102E]">
+                    <span className="font-bold shrink-0">{number}</span> 
+                    <span>{text}</span>
+                  </p>
+                )
+              }
+              
+              // Default paragraph
+              return <p key={i} className="text-base text-gray-500">{trimmed}</p>
+            })}
+          </div>
 
           {/* Price and Cart Controls */}
           <div className="flex items-center justify-between mt-auto pt-2">
