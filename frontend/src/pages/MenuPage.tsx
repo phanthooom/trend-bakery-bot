@@ -10,6 +10,12 @@ import LanguageDropdown from '../components/LanguageDropdown'
 import AddressesBottomSheet from '../components/AddressesBottomSheet'
 import { useTranslation } from '../i18n'
 
+declare global {
+  interface Window {
+    Telegram?: any
+  }
+}
+
 export default function MenuPage() {
   const [category, setCategory] = useState<'home' | 'retail'>('home')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)

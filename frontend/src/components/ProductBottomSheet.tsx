@@ -73,14 +73,14 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
 
           {/* Product Info */}
           <h2 className="font-bold text-gray-900 text-2xl mb-4">{product.name}</h2>
-          <div className="text-gray-600 text-sm leading-relaxed mb-6 space-y-1">
+          <div className="text-gray-600 text-sm leading-relaxed mb-6 space-y-1 text-left">
             {product.description.split('\n').map((line, i) => {
               const trimmed = line.trim();
               if (!trimmed) return null;
               
               // Total count logic
               if (trimmed.toLowerCase().includes('общее количество') || trimmed.toLowerCase().includes('итого')) {
-                return <p key={i} className="font-bold text-[#C8102E] mt-4 uppercase text-center text-sm">{trimmed}</p>
+                return <p key={i} className="font-bold text-[#C8102E] mt-4 uppercase text-left text-sm">{trimmed}</p>
               }
               
               // List items logic
