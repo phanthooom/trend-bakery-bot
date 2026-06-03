@@ -7,6 +7,8 @@ import { type Product } from '../store/useStore'
 import ProductCard from '../components/ProductCard'
 import ProductBottomSheet from '../components/ProductBottomSheet'
 import DeliveryDropdown from '../components/DeliveryDropdown'
+import LanguageDropdown from '../components/LanguageDropdown'
+import { useTranslation } from '../i18n'
 
 export default function MenuPage() {
   const [category, setCategory] = useState<'home' | 'retail'>('home')
@@ -14,6 +16,7 @@ export default function MenuPage() {
   const { address, deliveryType, setDeliveryType } = useStore()
   const { top: safeTop } = useSafeArea()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const filtered = products.filter((p) => p.category === category)
 
@@ -37,14 +40,9 @@ export default function MenuPage() {
             />
             <span className="font-bold text-gray-900 text-lg">Trend Bakery</span>
           </div>
-          <div className="flex gap-3">
-            <button className="text-gray-600">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M5 3l14 9-14 9V3z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <text x="4" y="17" fontSize="8" fill="currentColor">A</text>
-              </svg>
-            </button>
-            <button className="text-gray-600">
+          <div className="flex gap-2">
+            <LanguageDropdown />
+            <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white text-gray-600 transition-colors hover:bg-gray-50 active:bg-gray-100">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
                 <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -61,10 +59,10 @@ export default function MenuPage() {
           >
             <div>
               <div className="text-gray-500 text-xs">
-                {deliveryType === 'delivery' ? 'Доставка (Trend Bakery)' : 'Самовывоз'}
+                {deliveryType === 'delivery' ? t('deliveryTrend') : t('pickup')}
               </div>
               <div className="font-semibold text-gray-900 flex items-center gap-1">
-                {address?.street ?? 'Выберите адрес'}
+                {address?.street ?? t('chooseAddress')}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <path d="M6 9l6 6 6-6" stroke="#C8102E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -96,7 +94,7 @@ export default function MenuPage() {
                 : 'bg-white text-gray-700 border border-gray-200'
             }`}
           >
-            Для дома
+            {t('home')}
           </button>
           <button
             onClick={() => setCategory('retail')}
@@ -106,13 +104,13 @@ export default function MenuPage() {
                 : 'bg-white text-gray-700 border border-gray-200'
             }`}
           >
-            Розничные сети
+            {t('retail')}
           </button>
         </div>
 
         {/* Section title */}
         <h2 className="font-bold text-gray-900 text-lg mb-3">
-          {category === 'home' ? 'Для дома' : 'Розничные сети'}
+          {category === 'home' ? t('home') : t('retail')}
         </h2>
 
         {/* Products */}

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from '../i18n'
 
 interface Props {
   value: 'delivery' | 'pickup'
@@ -8,6 +9,7 @@ interface Props {
 export default function DeliveryDropdown({ value, onChange }: Props) {
   const [isOpen, setIsOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -26,7 +28,7 @@ export default function DeliveryDropdown({ value, onChange }: Props) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 border border-gray-200 bg-gray-50 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-colors active:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300"
       >
-        {value === 'delivery' ? 'Доставка' : 'Самовывоз'}
+        {value === 'delivery' ? t('delivery') : t('pickup')}
         <div className="flex flex-col gap-0.5 text-gray-400">
           <svg width="8" height="5" viewBox="0 0 12 8" fill="none">
             <path d="M1 7L6 2L11 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -52,7 +54,7 @@ export default function DeliveryDropdown({ value, onChange }: Props) {
               )}
             </span>
             <span className={value === 'delivery' ? 'font-medium' : 'text-white/90'}>
-              Доставка
+              {t('delivery')}
             </span>
           </button>
           
@@ -70,7 +72,7 @@ export default function DeliveryDropdown({ value, onChange }: Props) {
               )}
             </span>
             <span className={value === 'pickup' ? 'font-medium' : 'text-white/90'}>
-              Самовывоз
+              {t('pickup')}
             </span>
           </button>
         </div>

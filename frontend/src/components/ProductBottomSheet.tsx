@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { type Product } from '../store/useStore'
 import { useStore } from '../store/useStore'
+import { useTranslation } from '../i18n'
 
 interface Props {
   product: Product
@@ -9,6 +10,7 @@ interface Props {
 
 export default function ProductBottomSheet({ product, onClose }: Props) {
   const { addToCart, updateQuantity, cart } = useStore()
+  const { t } = useTranslation()
   const [imgError, setImgError] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
 
@@ -109,9 +111,9 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
             {quantity === 0 ? (
               <button
                 onClick={() => addToCart(product)}
-                className="bg-[#C8102E] text-white px-8 py-3 rounded-2xl font-bold text-base hover:bg-[#a00d24] transition-colors"
+                className="bg-[#C8102E] text-white font-semibold py-3 px-8 rounded-xl active:bg-[#a00c24] transition-colors shadow-sm"
               >
-                В корзину
+                {t('addToCart')}
               </button>
             ) : (
               <div className="flex items-center gap-4 bg-gray-100 p-1.5 rounded-2xl">

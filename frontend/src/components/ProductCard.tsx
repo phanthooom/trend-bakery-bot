@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { type Product } from '../store/useStore'
-import { useStore } from '../store/useStore'
+import { useTranslation } from '../i18n'
+import { type Product, useStore } from '../store/useStore'
 
 interface Props {
   product: Product
@@ -10,12 +10,13 @@ interface Props {
 export default function ProductCard({ product, onImageClick }: Props) {
   const { addToCart, updateQuantity, cart } = useStore()
   const [imgError, setImgError] = useState(false)
+  const { t } = useTranslation()
 
   const cartItem = cart.find((i) => i.id === product.id)
   const quantity = cartItem?.quantity ?? 0
 
   const formatPrice = (price: number) =>
-    price.toLocaleString('ru-RU') + ' сум'
+    price.toLocaleString('ru-RU') + ' ' + t('currency')
 
   return (
     <div className="bg-white mb-4">
@@ -34,9 +35,9 @@ export default function ProductCard({ product, onImageClick }: Props) {
           {quantity === 0 ? (
             <button
               onClick={() => addToCart(product)}
-              className="w-9 h-9 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-500 text-xl font-light hover:border-[#C8102E] hover:text-[#C8102E] transition-colors"
+              className="bg-[#C8102E] text-white text-sm font-semibold py-1.5 px-4 rounded-full active:bg-[#a00c24] transition-colors shadow-sm"
             >
-              +
+              {t('add')}
             </button>
           ) : (
             <div className="flex items-center gap-3">

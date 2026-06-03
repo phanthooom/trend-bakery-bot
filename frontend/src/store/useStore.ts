@@ -27,11 +27,13 @@ interface Store {
   cart: CartItem[]
   address: Address | null
   deliveryType: 'delivery' | 'pickup'
+  language: 'ru' | 'uz' | 'en'
   addToCart: (product: Product) => void
   removeFromCart: (id: number) => void
   updateQuantity: (id: number, delta: number) => void
   setAddress: (address: Address) => void
   setDeliveryType: (type: 'delivery' | 'pickup') => void
+  setLanguage: (lang: 'ru' | 'uz' | 'en') => void
   cartTotal: () => number
   cartCount: () => number
 }
@@ -40,6 +42,7 @@ export const useStore = create<Store>((set, get) => ({
   cart: [],
   address: null,
   deliveryType: 'delivery',
+  language: 'ru',
 
   addToCart: (product) => {
     set((state) => {
@@ -70,6 +73,7 @@ export const useStore = create<Store>((set, get) => ({
 
   setAddress: (address) => set({ address }),
   setDeliveryType: (type) => set({ deliveryType: type }),
+  setLanguage: (lang) => set({ language: lang }),
 
   cartTotal: () => get().cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
   cartCount: () => get().cart.reduce((sum, i) => sum + i.quantity, 0),
