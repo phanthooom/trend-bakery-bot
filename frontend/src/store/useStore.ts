@@ -31,6 +31,7 @@ interface Store {
   savedAddresses: Address[]
   deliveryType: 'delivery' | 'pickup'
   language: 'ru' | 'uz' | 'en'
+  phone: string
   addToCart: (product: Product) => void
   removeFromCart: (id: number) => void
   updateQuantity: (id: number, delta: number) => void
