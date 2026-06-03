@@ -4,9 +4,10 @@ import { useStore } from '../store/useStore'
 
 interface Props {
   product: Product
+  onImageClick?: (product: Product) => void
 }
 
-export default function ProductCard({ product }: Props) {
+export default function ProductCard({ product, onImageClick }: Props) {
   const { addToCart, updateQuantity, cart } = useStore()
   const [imgError, setImgError] = useState(false)
 
@@ -22,7 +23,8 @@ export default function ProductCard({ product }: Props) {
         src={imgError ? '/bread-placeholder.jpg' : product.image}
         alt={product.name}
         onError={() => setImgError(true)}
-        className="w-full h-52 object-cover rounded-lg"
+        onClick={() => onImageClick?.(product)}
+        className="w-full h-52 object-cover rounded-lg cursor-pointer active:opacity-80 transition-opacity"
       />
       <div className="pt-3">
         <h3 className="font-semibold text-gray-900 text-base">{product.name}</h3>

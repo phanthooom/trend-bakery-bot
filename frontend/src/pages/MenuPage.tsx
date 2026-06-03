@@ -3,10 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { useSafeArea } from '../context/SafeAreaContext'
 import { products } from '../data/products'
+import { type Product } from '../store/useStore'
 import ProductCard from '../components/ProductCard'
+import ProductBottomSheet from '../components/ProductBottomSheet'
 
 export default function MenuPage() {
   const [category, setCategory] = useState<'home' | 'retail'>('home')
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const { address, deliveryType, setDeliveryType } = useStore()
   const { top: safeTop } = useSafeArea()
   const navigate = useNavigate()
@@ -117,9 +120,21 @@ export default function MenuPage() {
 
         {/* Products */}
         {filtered.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard 
+            key={product.id} 
+            product={product} 
+            onImageClick={(p) => setSelectedProduct(p)}
+          />
         ))}
       </div>
+
+      {/* Bottom Sheet Modal */}
+      {selectedProduct && (
+        <ProductBottomSheet 
+          product={selectedProduct} 
+          onClose={() => setSelectedProduct(null)} 
+        />
+      )}
     </div>
   )
 }
