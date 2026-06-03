@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { type Product } from '../store/useStore'
 import { useStore } from '../store/useStore'
 
