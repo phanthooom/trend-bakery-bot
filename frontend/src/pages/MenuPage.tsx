@@ -45,7 +45,7 @@ export default function MenuPage() {
                 t.style.display = 'none'
               }}
             />
-            <span className="font-bold text-gray-900 text-lg">Trend Bakery</span>
+            <span className="font-bold text-gray-900 text-lg">Trend 🥨 Bakery</span>
           </div>
           <div className="flex gap-2">
             <LanguageDropdown />
