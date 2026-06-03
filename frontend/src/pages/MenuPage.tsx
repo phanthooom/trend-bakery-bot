@@ -123,10 +123,26 @@ export default function MenuPage() {
 
       <div className="px-4">
         {/* Banner */}
-        <div className="mt-4 bg-[#C8102E] rounded-xl p-6 flex flex-col items-center justify-center text-white mb-4">
+        <button 
+          onClick={() => {
+            try {
+              window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('light')
+              navigator.vibrate?.(50)
+              if (window.Telegram?.WebApp?.openLink) {
+                window.Telegram.WebApp.openLink('https://www.instagram.com/trendbakery.uzb/')
+              } else {
+                window.open('https://www.instagram.com/trendbakery.uzb/', '_blank')
+              }
+            } catch (e) {
+              window.open('https://www.instagram.com/trendbakery.uzb/', '_blank')
+            }
+          }}
+          className="w-full mt-4 bg-[#C8102E] rounded-xl p-6 flex flex-col items-center justify-center text-white mb-4 active:scale-[0.98] transition-transform shadow-sm"
+        >
+          <div className="text-3xl mb-1">🥐</div>
           <div className="text-2xl font-bold tracking-wide">Trénd Bakery</div>
-          <div className="text-sm opacity-80 italic">With love...</div>
-        </div>
+          <div className="text-sm opacity-90 italic font-light mt-0.5">With love...</div>
+        </button>
 
         {/* Category tabs */}
         <div className="flex gap-2 mb-4">
