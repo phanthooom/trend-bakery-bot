@@ -7,11 +7,14 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import CommandStart
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, WebAppInfo
 
+from aiohttp import web
+
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://your-ngrok-url.ngrok.io")
 ORDERS_CHAT_ID = os.getenv("ORDERS_CHAT_ID")
+API_PORT = int(os.getenv("API_PORT", 8000))
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=BOT_TOKEN)
@@ -37,17 +40,18 @@ async def start(message: types.Message):
         parse_mode="HTML"
     )
 
+async def api_order_handler(request: web.Request):
+    if request.method == "OPTIONS":
+        return web.Response(headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+        })
 
-@dp.message(lambda m: m.web_app_data is not None)
-async def handle_order(message: types.Message):
     try:
-        data = json.loads(message.web_app_data.data)
+        data = await request.json()
     except Exception:
-        await message.answer("Ошибка при получении заказа.")
-        return
-
-    if data.get("type") != "order":
-        return
+        return web.Response(status=400, text="Invalid JSON", headers={"Access-Control-Allow-Origin": "*"})
 
     items = data.get("items", [])
     total = data.get("total", 0)
@@ -55,10 +59,20 @@ async def handle_order(message: types.Message):
     phone = data.get("phone", "не указан")
     payment = data.get("payment", "не указан")
     comment = data.get("comment", "")
+    user_info = data.get("user", {})
 
-    user = message.from_user
-    lines = [f"🛒 <b>Новый заказ</b>"]
-    lines.append(f"👤 {user.full_name} (@{user.username or 'нет'})")
+    lines = [f"🛒 <b>Новый заказ (через API)</b>"]
+    
+    user_id = user_info.get("id")
+    if user_info:
+        username = user_info.get("username", "нет")
+        first_name = user_info.get("first_name", "")
+        last_name = user_info.get("last_name", "")
+        full_name = f"{first_name} {last_name}".strip()
+        lines.append(f"👤 {full_name} (@{username})")
+    else:
+        lines.append(f"👤 Пользователь (неизвестен)")
+        
     lines.append(f"📞 Телефон: {phone}")
     lines.append(f"💳 Оплата: {'Наличными' if payment == 'cash' else 'Картой'}")
     
@@ -75,15 +89,36 @@ async def handle_order(message: types.Message):
 
     order_text = "\n".join(lines)
 
-    await message.answer("✅ Заказ принят! Мы свяжемся с вами в ближайшее время.")
+    if user_id:
+        try:
+            await bot.send_message(user_id, "✅ Заказ принят! Мы свяжемся с вами в ближайшее время.")
+            await bot.send_message(user_id, order_text, parse_mode="HTML")
+        except Exception as e:
+            logging.error(f"Failed to send to user: {e}")
 
     if ORDERS_CHAT_ID:
-        await bot.send_message(ORDERS_CHAT_ID, order_text, parse_mode="HTML")
+        try:
+            await bot.send_message(ORDERS_CHAT_ID, order_text, parse_mode="HTML")
+        except Exception as e:
+            logging.error(f"Failed to send to admin: {e}")
 
+    return web.json_response({"success": True}, headers={"Access-Control-Allow-Origin": "*"})
 
 async def main():
-    await dp.start_polling(bot)
+    app = web.Application()
+    app.router.add_options("/api/order", api_order_handler)
+    app.router.add_post("/api/order", api_order_handler)
+    
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', API_PORT)
+    await site.start()
+    logging.info(f"API server running on port {API_PORT}")
 
+    try:
+        await dp.start_polling(bot)
+    finally:
+        await runner.cleanup()
 
 if __name__ == "__main__":
     asyncio.run(main())

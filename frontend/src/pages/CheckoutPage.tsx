@@ -15,7 +15,7 @@ export default function CheckoutPage() {
 
   const formatPrice = (price: number) => price.toLocaleString('ru-RU') + ' ' + t('currency')
 
-  const handleOrder = () => {
+  const handleOrder = async () => {
     const tgApp = window.Telegram?.WebApp
 
     if (!phone) {
@@ -40,31 +40,28 @@ export default function CheckoutPage() {
       address,
       phone,
       payment,
-      comment
-    }
-
-    if (tgApp?.initDataUnsafe?.query_id) {
-      if (tgApp?.showAlert) {
-        tgApp.showAlert('Внимание: Вы открыли магазин через кнопку в чате. Отправка заказа работает только если открыть магазин через кнопку в нижнем меню (возле поля ввода сообщения). Пожалуйста, перезапустите бота командой /start и нажмите кнопку внизу!')
-      } else {
-        alert('Внимание: Вы открыли магазин через кнопку в чате. Перезапустите бота командой /start и нажмите кнопку внизу!')
-      }
-      return
+      comment,
+      user: tgApp?.initDataUnsafe?.user || {}
     }
 
     try {
-      const dataStr = JSON.stringify(orderData)
-      if (tgApp?.sendData) {
-        tgApp.sendData(dataStr)
-        setTimeout(() => {
-          if (tgApp?.showAlert) tgApp.showAlert('sendData вызвана, но окно не закрылось. Откройте магазин через нижнее меню!')
-          else alert('Откройте магазин через нижнее меню!')
-        }, 500)
-      } else {
-        alert('Функция отправки заказа недоступна. Пожалуйста, откройте магазин через Telegram.')
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${API_URL}/api/order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(orderData)
+      })
+
+      if (!response.ok) {
+        throw new Error('Server returned ' + response.status)
       }
+
+      // Если успешно, закрываем магазин
+      tgApp?.close()
     } catch (err: any) {
-      if (tgApp?.showAlert) tgApp.showAlert('Ошибка при отправке: ' + err.message)
+      if (tgApp?.showAlert) tgApp.showAlert('Ошибка при отправке заказа (API): ' + err.message + '\n\nУбедитесь, что бот запущен и переменная VITE_API_URL прописана в Vercel.')
       else alert('Ошибка при отправке: ' + err.message)
     }
   }
