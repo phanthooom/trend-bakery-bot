@@ -18,9 +18,10 @@ export default function CheckoutPage() {
   const handleOrder = async () => {
     const tgApp = window.Telegram?.WebApp
 
-    if (!phone) {
-      if (tgApp?.showAlert) tgApp.showAlert('Пожалуйста, введите номер телефона')
-      else alert('Пожалуйста, введите номер телефона')
+    const phoneDigits = phone.replace(/\D/g, '')
+    if (!phone || phone === '+998' || phoneDigits.length < 12) {
+      if (tgApp?.showAlert) tgApp.showAlert('Пожалуйста, введите корректный номер телефона (например: +998901234567)')
+      else alert('Пожалуйста, введите корректный номер телефона')
       return
     }
 
