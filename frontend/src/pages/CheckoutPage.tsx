@@ -6,7 +6,7 @@ import WebApp from '@twa-dev/sdk'
 import { useTranslation } from '../i18n'
 
 export default function CheckoutPage() {
-  const { cart, cartTotal, address, clearCart } = useStore()
+  const { cart, cartTotal, address } = useStore()
   const { top: safeTop, bottom: safeBottom } = useSafeArea()
   const navigate = useNavigate()
   const { t } = useTranslation()

@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { useSafeArea } from '../context/SafeAreaContext'
-import WebApp from '@twa-dev/sdk'
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, cartTotal, address } = useStore()
