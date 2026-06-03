@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Package, Plus, Trash2, Edit2, LogOut, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { Product } from '../store/useStore';
+import type { Product } from '../store/useStore';
 
 export function AdminPage() {
   const [password, setPassword] = useState('');
