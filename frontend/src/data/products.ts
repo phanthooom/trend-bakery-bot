@@ -43,10 +43,10 @@ export const products: Product[] = [
   },
   {
     id: 6,
-    name: '🔥 Сет «Мини слоёное ассорти П/Ф»',
-    description: '«Классический круассан на сливочном масле» – 9 шт, «Pain chocolat» – 9 шт, «Даниш с кремом и изюмом» – 16 шт. Итого: 34 шт',
+    name: '🔥 Новинка! Сет «Мини слоеное ассорти П/Ф»',
+    description: '1. «Классический круассан на сливочном масле» - 9 шт.\n2. «Pain chocolate» - 9 шт.\n3. «Даниш с кремом и изюмом» - 16 шт.\n\nОбщее количество: 34 шт.',
     price: 300000,
-    image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=800&q=80',
+    image: '/mini-sloenoe.png',
     category: 'home',
   },
   {

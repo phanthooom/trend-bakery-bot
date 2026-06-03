@@ -71,7 +71,7 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
 
           {/* Product Info */}
           <h2 className="font-bold text-gray-900 text-2xl mb-2">{product.name}</h2>
-          <p className="text-gray-500 text-base leading-relaxed mb-6">
+          <p className="text-gray-500 text-base leading-relaxed mb-6 whitespace-pre-wrap">
             {product.description}
           </p>
 
