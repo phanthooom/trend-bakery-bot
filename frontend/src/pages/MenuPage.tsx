@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { useSafeArea } from '../context/SafeAreaContext'
 import { products } from '../data/products'
@@ -19,7 +18,6 @@ export default function MenuPage() {
   const [isAddressesOpen, setIsAddressesOpen] = useState(false)
   const { address, deliveryType, setDeliveryType } = useStore()
   const { top: safeTop } = useSafeArea()
-  const navigate = useNavigate()
   const { t } = useTranslation()
 
   const filtered = products.filter((p) => {
