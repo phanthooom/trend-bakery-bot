@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { useSafeArea } from '../context/SafeAreaContext'
-import WebApp from '@twa-dev/sdk'
 import { useTranslation } from '../i18n'
 
 export default function CheckoutPage() {
@@ -17,13 +16,16 @@ export default function CheckoutPage() {
   const formatPrice = (price: number) => price.toLocaleString('ru-RU') + ' ' + t('currency')
 
   const handleOrder = () => {
+    const tgApp = window.Telegram?.WebApp
+
     if (!phone) {
-      WebApp.showAlert('Пожалуйста, введите номер телефона')
+      if (tgApp?.showAlert) tgApp.showAlert('Пожалуйста, введите номер телефона')
+      else alert('Пожалуйста, введите номер телефона')
       return
     }
 
     try {
-      WebApp.HapticFeedback.impactOccurred('medium')
+      tgApp?.HapticFeedback?.impactOccurred('medium')
     } catch (e) {}
 
     const orderData = {
@@ -41,21 +43,29 @@ export default function CheckoutPage() {
       comment
     }
 
-    if (WebApp.initDataUnsafe?.query_id) {
-      WebApp.showAlert('Внимание: Вы открыли магазин через кнопку в чате. Отправка заказа работает только если открыть магазин через кнопку в нижнем меню (возле поля ввода сообщения). Пожалуйста, перезапустите бота командой /start и нажмите кнопку внизу!')
+    if (tgApp?.initDataUnsafe?.query_id) {
+      if (tgApp?.showAlert) {
+        tgApp.showAlert('Внимание: Вы открыли магазин через кнопку в чате. Отправка заказа работает только если открыть магазин через кнопку в нижнем меню (возле поля ввода сообщения). Пожалуйста, перезапустите бота командой /start и нажмите кнопку внизу!')
+      } else {
+        alert('Внимание: Вы открыли магазин через кнопку в чате. Перезапустите бота командой /start и нажмите кнопку внизу!')
+      }
       return
     }
 
     try {
       const dataStr = JSON.stringify(orderData)
-      WebApp.sendData(dataStr)
-      // Если sendData срабатывает успешно, WebApp должен моментально закрыться.
-      // Если мы дошли до этой строчки и апп не закрылся, значит sendData был проигнорирован Телеграмом.
-      setTimeout(() => {
-        WebApp.showAlert('sendData вызвана, но Телеграм не закрыл окно. Возможно, апп открыт некорректным способом. Пожалуйста, откройте через кнопку в меню!')
-      }, 500)
+      if (tgApp?.sendData) {
+        tgApp.sendData(dataStr)
+        setTimeout(() => {
+          if (tgApp?.showAlert) tgApp.showAlert('sendData вызвана, но окно не закрылось. Откройте магазин через нижнее меню!')
+          else alert('Откройте магазин через нижнее меню!')
+        }, 500)
+      } else {
+        alert('Функция отправки заказа недоступна. Пожалуйста, откройте магазин через Telegram.')
+      }
     } catch (err: any) {
-      WebApp.showAlert('Ошибка при отправке: ' + err.message)
+      if (tgApp?.showAlert) tgApp.showAlert('Ошибка при отправке: ' + err.message)
+      else alert('Ошибка при отправке: ' + err.message)
     }
   }
 
