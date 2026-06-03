@@ -35,10 +35,18 @@ export default function App() {
 
     if (!wa) return
 
-    wa.ready?.()
-    wa.expand?.()
-    wa.requestFullscreen?.()
-    wa.disableVerticalSwipes?.()
+    try {
+      wa.ready?.()
+      wa.expand?.()
+    } catch (e) {}
+
+    try {
+      wa.requestFullscreen?.()
+    } catch (e) {}
+
+    try {
+      wa.disableVerticalSwipes?.()
+    } catch (e) {}
 
     const updateSafeArea = () => {
       const contentTop = wa.contentSafeAreaInset?.top ?? 0
