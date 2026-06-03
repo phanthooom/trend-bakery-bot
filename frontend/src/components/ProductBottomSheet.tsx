@@ -34,7 +34,7 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
 
   return (
     <div 
-      className={`fixed inset-0 z-50 flex items-end justify-center ${isClosing ? 'opacity-0 transition-opacity duration-300' : 'animate-fade-in'}`}
+      className={`fixed inset-0 z-[60] flex items-end justify-center ${isClosing ? 'opacity-0 transition-opacity duration-300' : 'animate-fade-in'}`}
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}
@@ -60,7 +60,7 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
           </svg>
         </button>
 
-        <div className="overflow-y-auto px-5 pb-5">
+        <div className="overflow-y-auto px-5 pb-5 min-h-0 shrink">
           {/* Product Image */}
           <img
             src={imgError ? '/bread-placeholder.jpg' : product.image}
