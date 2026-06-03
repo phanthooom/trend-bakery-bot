@@ -49,34 +49,36 @@ export default function App() {
     } catch (e) {}
 
     const updateSafeArea = () => {
-      const contentTop = wa.contentSafeAreaInset?.top ?? 0
-      const systemTop = wa.safeAreaInset?.top ?? 0
-      // contentSafeAreaInset = Telegram header height (overlay in fullscreen)
-      // safeAreaInset = device notch/status bar
-      const top = contentTop + systemTop
-      const bottom = wa.safeAreaInset?.bottom ?? 0
-      setSafeTop(top)
-      setSafeBottom(bottom)
-      // push CSS var for non-React usage
-      document.documentElement.style.setProperty('--safe-top', `${top}px`)
-      document.documentElement.style.setProperty('--safe-bottom', `${bottom}px`)
+      try {
+        const contentTop = wa.contentSafeAreaInset?.top ?? 0
+        const systemTop = wa.safeAreaInset?.top ?? 0
+        const top = contentTop + systemTop
+        const bottom = wa.safeAreaInset?.bottom ?? 0
+        setSafeTop(top)
+        setSafeBottom(bottom)
+        document.documentElement.style.setProperty('--safe-top', `${top}px`)
+        document.documentElement.style.setProperty('--safe-bottom', `${bottom}px`)
+      } catch (e) {}
     }
 
     updateSafeArea()
-    // Telegram fires events async — retry a few times to catch late values
     const t1 = setTimeout(updateSafeArea, 150)
     const t2 = setTimeout(updateSafeArea, 500)
     const t3 = setTimeout(updateSafeArea, 1200)
 
-    wa.onEvent?.('safeAreaChanged', updateSafeArea)
-    wa.onEvent?.('fullscreenChanged', updateSafeArea)
+    try {
+      wa.onEvent?.('safeAreaChanged', updateSafeArea)
+      wa.onEvent?.('fullscreenChanged', updateSafeArea)
+    } catch (e) {}
 
     return () => {
       clearTimeout(t1)
       clearTimeout(t2)
       clearTimeout(t3)
-      wa.offEvent?.('safeAreaChanged', updateSafeArea)
-      wa.offEvent?.('fullscreenChanged', updateSafeArea)
+      try {
+        wa.offEvent?.('safeAreaChanged', updateSafeArea)
+        wa.offEvent?.('fullscreenChanged', updateSafeArea)
+      } catch (e) {}
     }
   }, [])
 
