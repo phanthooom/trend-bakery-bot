@@ -64,6 +64,36 @@ export default async function handler(req: any, res: any) {
 
     const orderText = lines.join('\n')
 
+    // Сохранение заказа в базу данных Supabase (если настроены ключи)
+    const SUPABASE_URL = process.env.SUPABASE_URL
+    const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      try {
+        const supabaseUrl = `${SUPABASE_URL}/rest/v1/orders`
+        const dbData = {
+          user_id: user.id || null,
+          username: user.username || "",
+          first_name: user.first_name || "",
+          items: items,
+          total: total,
+          address: address,
+          status: "new"
+        }
+        await fetch(supabaseUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify(dbData)
+        })
+      } catch (err) {
+        console.error("Ошибка при сохранении в Supabase:", err)
+      }
+    }
+
     // Функция отправки сообщения в Телеграм
     const sendTelegramMessage = async (chatId: string | number, text: string) => {
       const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`
