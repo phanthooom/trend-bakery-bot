@@ -13,12 +13,19 @@ import { useTranslation } from '../i18n'
 export default function MenuPage() {
   const [category, setCategory] = useState<'home' | 'retail'>('home')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { address, deliveryType, setDeliveryType } = useStore()
   const { top: safeTop } = useSafeArea()
   const navigate = useNavigate()
   const { t } = useTranslation()
 
-  const filtered = products.filter((p) => p.category === category)
+  const filtered = products.filter((p) => {
+    const matchesCategory = p.category === category
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          p.description.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
 
   return (
     <div className="flex flex-col min-h-screen bg-white pb-20">
@@ -42,12 +49,49 @@ export default function MenuPage() {
           </div>
           <div className="flex gap-2">
             <LanguageDropdown />
-            <button className="w-10 h-10 flex items-center justify-center rounded-full bg-white text-gray-600 transition-colors hover:bg-gray-50 active:bg-gray-100">
+            <button 
+              onClick={() => {
+                setIsSearchOpen(!isSearchOpen)
+                if (isSearchOpen) setSearchQuery('') // Clear search on close
+              }}
+              className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors ${
+                isSearchOpen 
+                  ? 'bg-[#C8102E] text-white' 
+                  : 'bg-white text-gray-600 hover:bg-gray-50 active:bg-gray-100'
+              }`}
+            >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
                 <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               </svg>
             </button>
+          </div>
+        </div>
+
+        {/* Animated Search Bar */}
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isSearchOpen ? 'max-h-16 opacity-100 mb-3' : 'max-h-0 opacity-0 m-0'}`}>
+          <div className="relative">
+            <input 
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('search')}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-10 pr-10 text-[15px] outline-none focus:border-[#C8102E] focus:bg-white transition-all shadow-sm"
+            />
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="2" />
+              <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
