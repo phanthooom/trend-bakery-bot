@@ -1,4 +1,5 @@
 import { put } from '@vercel/blob';
+import { requireAdmin } from './_auth';
 
 export default async function handler(req: any, res: any) {
   // CORS setup
@@ -7,7 +8,7 @@ export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Methods', 'OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Telegram-Init-Data'
   );
 
   if (req.method === 'OPTIONS') {
@@ -15,11 +16,9 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const ADMIN_PASSWORD = process.env.VITE_ADMIN_PASSWORD;
-
   try {
-    const authHeader = req.headers.authorization;
-    if (!ADMIN_PASSWORD || authHeader !== ADMIN_PASSWORD) {
+    const admin = await requireAdmin(req);
+    if (!admin) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 

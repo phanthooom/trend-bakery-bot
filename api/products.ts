@@ -1,4 +1,5 @@
-import { Pool } from '@neondatabase/serverless';
+import { getDb } from './_firebase';
+import { requireAdmin } from './_auth';
 
 export default async function handler(req: any, res: any) {
   // CORS setup
@@ -7,7 +8,7 @@ export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Telegram-Init-Data'
   );
 
   if (req.method === 'OPTIONS') {
@@ -15,45 +16,68 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const ADMIN_PASSWORD = process.env.VITE_ADMIN_PASSWORD;
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const db = getDb();
 
   try {
     if (req.method === 'GET') {
-      const { rows } = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
-      return res.status(200).json(rows);
+      const snap = await db.collection('products').orderBy('created_at', 'desc').get();
+      const products = snap.docs.map((d) => {
+        const data = d.data();
+        return {
+          id: data.id,
+          name: data.name,
+          description: data.description || '',
+          price: data.price,
+          image: data.image,
+          category: data.category,
+        };
+      });
+      return res.status(200).json(products);
     }
 
-    // Verify admin password for writing operations
-    const authHeader = req.headers.authorization;
-    if (!ADMIN_PASSWORD || authHeader !== ADMIN_PASSWORD) {
+    // Writes require a verified Telegram admin.
+    const admin = await requireAdmin(req);
+    if (!admin) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     if (req.method === 'POST') {
       const { name, description, price, image, category } = req.body;
-      if (!name || !price || !category) {
+      if (!name || price == null || !category) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
-      
-      const { rows } = await pool.query(
-        'INSERT INTO products (name, description, price, image, category) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [name, description, price, image, category]
-      );
-      return res.status(201).json(rows[0]);
+
+      const id = Date.now();
+      const product = {
+        id,
+        name,
+        description: description || '',
+        price: Number(price),
+        image: image || '',
+        category,
+        created_at: id,
+      };
+      await db.collection('products').doc(String(id)).set(product);
+      return res.status(201).json(product);
     }
 
     if (req.method === 'PUT') {
       const { id, name, description, price, image, category } = req.body;
-      if (!id || !name || !price || !category) {
+      if (!id || !name || price == null || !category) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      const { rows } = await pool.query(
-        'UPDATE products SET name = $1, description = $2, price = $3, image = $4, category = $5 WHERE id = $6 RETURNING *',
-        [name, description, price, image, category, id]
-      );
-      return res.status(200).json(rows[0]);
+      const ref = db.collection('products').doc(String(id));
+      const update = {
+        name,
+        description: description || '',
+        price: Number(price),
+        image: image || '',
+        category,
+      };
+      await ref.set(update, { merge: true });
+      const doc = await ref.get();
+      return res.status(200).json({ id, ...doc.data() });
     }
 
     if (req.method === 'DELETE') {
@@ -61,8 +85,7 @@ export default async function handler(req: any, res: any) {
       if (!id) {
         return res.status(400).json({ error: 'Missing product id' });
       }
-
-      await pool.query('DELETE FROM products WHERE id = $1', [id]);
+      await db.collection('products').doc(String(id)).delete();
       return res.status(200).json({ success: true });
     }
 
@@ -70,9 +93,5 @@ export default async function handler(req: any, res: any) {
   } catch (error: any) {
     console.error('API Error:', error);
     res.status(500).json({ error: error.message });
-  } finally {
-    // Vercel serverless functions recommend not closing the pool to reuse connections,
-    // but typically pool end is fine. Let's just avoid closing to reuse it across warm invocations.
-    // pool.end();
   }
 }
