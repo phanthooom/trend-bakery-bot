@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from '../i18n'
 import { type Product, useStore } from '../store/useStore'
+import { haptic } from '../utils/haptic'
 
 interface Props {
   product: Product
@@ -18,14 +19,34 @@ export default function ProductCard({ product, onImageClick }: Props) {
   const formatPrice = (price: number) =>
     price.toLocaleString('ru-RU') + ' ' + t('currency')
 
+  const handleImageClick = () => {
+    haptic.light()
+    onImageClick?.(product)
+  }
+
+  const handleAdd = () => {
+    haptic.medium()
+    addToCart(product)
+  }
+
+  const handleInc = () => {
+    haptic.light()
+    updateQuantity(product.id, 1)
+  }
+
+  const handleDec = () => {
+    haptic.light()
+    updateQuantity(product.id, -1)
+  }
+
   return (
     <div className="bg-white mb-4">
       <img
         src={imgError ? '/bread-placeholder.jpg' : product.image}
         alt={product.name}
         onError={() => setImgError(true)}
-        onClick={() => onImageClick?.(product)}
-        className="w-full h-52 object-cover rounded-lg cursor-pointer active:opacity-80 transition-opacity"
+        onClick={handleImageClick}
+        className="w-full h-52 object-cover rounded-lg cursor-pointer active:opacity-75 transition-opacity"
       />
       <div className="pt-3">
         <h3 className="font-semibold text-gray-900 text-base">{product.name}</h3>
@@ -34,23 +55,23 @@ export default function ProductCard({ product, onImageClick }: Props) {
           <span className="font-bold text-gray-900 text-base">{formatPrice(product.price)}</span>
           {quantity === 0 ? (
             <button
-              onClick={() => addToCart(product)}
-              className="bg-[#C8102E] text-white text-sm font-semibold py-1.5 px-4 rounded-full active:bg-[#a00c24] transition-colors shadow-sm"
+              onClick={handleAdd}
+              className="bg-[#C8102E] text-white text-sm font-semibold py-1.5 px-4 rounded-full active:scale-95 transition-transform shadow-sm"
             >
               {t('add')}
             </button>
           ) : (
             <div className="flex items-center gap-3">
               <button
-                onClick={() => updateQuantity(product.id, -1)}
-                className="w-9 h-9 rounded-full bg-[#C8102E] text-white flex items-center justify-center text-xl font-light"
+                onClick={handleDec}
+                className="w-9 h-9 rounded-full bg-[#C8102E] text-white flex items-center justify-center text-xl font-light active:scale-90 transition-transform"
               >
                 −
               </button>
               <span className="font-bold text-gray-900 w-5 text-center">{quantity}</span>
               <button
-                onClick={() => updateQuantity(product.id, 1)}
-                className="w-9 h-9 rounded-full bg-[#C8102E] text-white flex items-center justify-center text-xl font-light"
+                onClick={handleInc}
+                className="w-9 h-9 rounded-full bg-[#C8102E] text-white flex items-center justify-center text-xl font-light active:scale-90 transition-transform"
               >
                 +
               </button>

@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useStore } from '../store/useStore'
+import { haptic } from '../utils/haptic'
 
 export default function BottomNav() {
   const navigate = useNavigate()
@@ -80,7 +81,7 @@ export default function BottomNav() {
           return (
             <button
               key={tab.path}
-              onClick={() => navigate(tab.path)}
+              onClick={() => { haptic.selection(); navigate(tab.path) }}
               className="flex-1 flex flex-col items-center justify-center py-2 gap-1"
             >
               {tab.icon(active)}

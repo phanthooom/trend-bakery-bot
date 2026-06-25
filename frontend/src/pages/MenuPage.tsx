@@ -8,6 +8,7 @@ import DeliveryDropdown from '../components/DeliveryDropdown'
 import LanguageDropdown from '../components/LanguageDropdown'
 import AddressesBottomSheet from '../components/AddressesBottomSheet'
 import { useTranslation } from '../i18n'
+import { haptic } from '../utils/haptic'
 
 declare global {
   interface Window {
@@ -157,7 +158,7 @@ export default function MenuPage() {
         {/* Category tabs */}
         <div className="flex gap-2 mb-4">
           <button
-            onClick={() => setCategory('home')}
+            onClick={() => { haptic.selection(); setCategory('home') }}
             className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
               category === 'home'
                 ? 'bg-[#C8102E] text-white'
@@ -167,7 +168,7 @@ export default function MenuPage() {
             {t('home')}
           </button>
           <button
-            onClick={() => setCategory('retail')}
+            onClick={() => { haptic.selection(); setCategory('retail') }}
             className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
               category === 'retail'
                 ? 'bg-[#C8102E] text-white'
