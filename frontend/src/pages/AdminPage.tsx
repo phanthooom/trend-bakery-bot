@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Package, Plus, Trash2, Edit2, Image as ImageIcon, Loader2, ShieldX, Users, UserPlus } from 'lucide-react';
+import { Plus, Trash2, Edit2, Image as ImageIcon, Loader2, ShieldX, Users, UserPlus, ChevronRight } from 'lucide-react';
 import type { Product } from '../store/useStore';
+
+const BRAND = '#C8102E';
 
 interface Admin {
   telegram_id: number;
@@ -9,8 +11,6 @@ interface Admin {
   role: 'super' | 'admin';
 }
 
-// Read initData lazily at call time via native window object.
-// @twa-dev/sdk wraps the same value but may not reflect it at module load time.
 const getInitData = (): string => {
   try {
     return (window as any).Telegram?.WebApp?.initData || '';
@@ -33,27 +33,22 @@ export function AdminPage() {
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [tab, setTab] = useState<'products' | 'admins'>('products');
 
-  // Product modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '', price: '', category: 'home', image: '' });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Admin form state
   const [newAdminId, setNewAdminId] = useState('');
   const [newAdminName, setNewAdminName] = useState('');
 
-  // On mount: verify the caller is an admin (GET /api/admins also returns role + list).
   useEffect(() => {
     const check = async () => {
       try {
         const res = await fetch('/api/admins', { headers: authHeaders() });
-        if (res.status === 401 || res.status === 403) {
-          setAuth('denied');
-          return;
-        }
+        if (res.status === 401 || res.status === 403) { setAuth('denied'); return; }
         if (!res.ok) throw new Error('auth check failed');
         const data = await res.json();
         setRole(data.me?.role || 'admin');
@@ -65,13 +60,13 @@ export function AdminPage() {
       }
     };
     check();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProducts = async () => {
     try {
       const res = await fetch('/api/products');
-      if (!res.ok) throw new Error('Failed to fetch products');
+      if (!res.ok) throw new Error('fetch failed');
       setProducts(await res.json());
     } catch {
       setError('Не удалось загрузить товары');
@@ -87,6 +82,18 @@ export function AdminPage() {
     } catch {}
   };
 
+  const handleSeed = async () => {
+    setLoading(true);
+    try {
+      await fetch('/api/seed', { method: 'POST', headers: authHeaders() });
+      await fetchProducts();
+    } catch {
+      alert('Не удалось загрузить стартовые товары');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const openAddModal = () => {
     setEditingProduct(null);
     setFormData({ name: '', description: '', price: '', category: 'home', image: '' });
@@ -95,13 +102,7 @@ export function AdminPage() {
 
   const openEditModal = (product: Product) => {
     setEditingProduct(product);
-    setFormData({
-      name: product.name,
-      description: product.description || '',
-      price: product.price.toString(),
-      category: product.category,
-      image: product.image,
-    });
+    setFormData({ name: product.name, description: product.description || '', price: product.price.toString(), category: product.category, image: product.image });
     setIsModalOpen(true);
   };
 
@@ -111,18 +112,13 @@ export function AdminPage() {
     setUploadingImage(true);
     try {
       const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: file,
+        method: 'POST', headers: authHeaders(), body: file,
       });
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || `Upload failed with status ${response.status}`);
-      }
+      if (!response.ok) { const d = await response.json().catch(() => ({})); throw new Error(d.error || `${response.status}`); }
       const blob = await response.json();
-      setFormData((prev) => ({ ...prev, image: blob.url }));
+      setFormData(prev => ({ ...prev, image: blob.url }));
     } catch (err: any) {
-      alert('Ошибка при загрузке фото: ' + err.message);
+      alert('Ошибка загрузки: ' + err.message);
     } finally {
       setUploadingImage(false);
     }
@@ -135,57 +131,32 @@ export function AdminPage() {
       const method = editingProduct ? 'PUT' : 'POST';
       const body = {
         ...(editingProduct && { id: editingProduct.id }),
-        name: formData.name,
-        description: formData.description,
-        price: Number(formData.price),
-        category: formData.category,
+        name: formData.name, description: formData.description,
+        price: Number(formData.price), category: formData.category,
         image: formData.image || 'https://images.unsplash.com/photo-1555507036-ab1f4022115c?w=500',
       };
-      const res = await fetch('/api/products', {
-        method,
-        headers: authHeaders(true),
-        body: JSON.stringify(body),
-      });
-      if (res.status === 401) {
-        setAuth('denied');
-        return;
-      }
-      if (!res.ok) throw new Error('Ошибка при сохранении');
+      const res = await fetch('/api/products', { method, headers: authHeaders(true), body: JSON.stringify(body) });
+      if (res.status === 401) { setAuth('denied'); return; }
+      if (!res.ok) throw new Error('save failed');
       await fetchProducts();
       setIsModalOpen(false);
     } catch {
-      alert('Произошла ошибка при сохранении товара');
+      alert('Ошибка при сохранении товара');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Вы уверены, что хотите удалить этот товар?')) return;
+    if (!window.confirm('Удалить этот товар?')) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/products?id=${id}`, { method: 'DELETE', headers: authHeaders() });
-      if (res.status === 401) {
-        setAuth('denied');
-        return;
-      }
-      if (!res.ok) throw new Error('Delete failed');
+      if (res.status === 401) { setAuth('denied'); return; }
+      if (!res.ok) throw new Error('delete failed');
       await fetchProducts();
     } catch {
       alert('Ошибка при удалении');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSeed = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/seed', { method: 'POST', headers: authHeaders() });
-      if (!res.ok) throw new Error('seed failed');
-      await fetchProducts();
-    } catch {
-      alert('Не удалось загрузить стартовые товары');
     } finally {
       setLoading(false);
     }
@@ -197,33 +168,25 @@ export function AdminPage() {
     setLoading(true);
     try {
       const res = await fetch('/api/admins', {
-        method: 'POST',
-        headers: authHeaders(true),
+        method: 'POST', headers: authHeaders(true),
         body: JSON.stringify({ telegram_id: Number(newAdminId), name: newAdminName }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Ошибка');
-      }
-      setNewAdminId('');
-      setNewAdminName('');
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Ошибка'); }
+      setNewAdminId(''); setNewAdminName('');
       await fetchAdmins();
     } catch (err: any) {
-      alert('Не удалось добавить админа: ' + err.message);
+      alert('Не удалось добавить: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleRemoveAdmin = async (id: number) => {
-    if (!window.confirm('Удалить этого админа?')) return;
+    if (!window.confirm('Удалить этого администратора?')) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/admins?id=${id}`, { method: 'DELETE', headers: authHeaders() });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Ошибка');
-      }
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Ошибка'); }
       await fetchAdmins();
     } catch (err: any) {
       alert('Не удалось удалить: ' + err.message);
@@ -232,298 +195,343 @@ export function AdminPage() {
     }
   };
 
+  // ─── States ───────────────────────────────────────────────────────────────
+
   if (auth === 'checking') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#ff6b00]" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: BRAND }}>
+            <Loader2 className="w-6 h-6 text-white animate-spin" />
+          </div>
+          <p className="text-sm text-gray-400">Проверка доступа...</p>
+        </div>
       </div>
     );
   }
 
   if (auth === 'denied') {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-6">
-          <ShieldX className="w-8 h-8 text-red-600" />
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
+        <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6" style={{ background: '#fff0f0' }}>
+          <ShieldX className="w-10 h-10" style={{ color: BRAND }} />
         </div>
-        <h2 className="text-2xl font-extrabold text-gray-900">Доступ запрещён</h2>
-        <p className="mt-2 text-gray-500 max-w-sm">
-          Эта панель доступна только администраторам. Откройте мини-приложение в Telegram под учётной записью администратора.
+        <h2 className="text-2xl font-bold text-gray-900">Доступ запрещён</h2>
+        <p className="mt-2 text-gray-400 text-sm max-w-xs leading-relaxed">
+          Панель доступна только администраторам. Откройте приложение в Telegram под нужной учётной записью.
         </p>
-        <div className="mt-6 bg-white rounded-xl border border-gray-200 p-4 text-left w-full max-w-sm">
-          <p className="text-xs font-mono text-gray-500 break-all">initData length: {getInitData().length}</p>
+        <div className="mt-8 w-full max-w-xs bg-gray-50 rounded-2xl p-4 text-left">
+          <p className="text-xs text-gray-400 font-mono">initData: {getInitData().length} chars</p>
           <button
             onClick={async () => {
-              const id = getInitData();
-              const res = await fetch('/api/me', { headers: { 'X-Telegram-Init-Data': id } });
+              const res = await fetch('/api/me', { headers: { 'X-Telegram-Init-Data': getInitData() } });
               const d = await res.json();
               alert(JSON.stringify(d, null, 2));
             }}
-            className="mt-3 w-full py-2 px-3 bg-gray-100 rounded-lg text-xs font-medium text-gray-700"
+            className="mt-3 w-full py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-white border border-gray-200"
           >
-            Показать debug info
+            Debug info
           </button>
         </div>
       </div>
     );
   }
 
+  // ─── Main ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#ff6b00] rounded-lg flex items-center justify-center">
-                <Package className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-bold text-xl text-gray-900">Админка</span>
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-20 px-4 pt-3 pb-0">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: BRAND }}>
+              <span className="text-white text-base">🥨</span>
             </div>
-            <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-orange-100 text-orange-800">
-              {role === 'super' ? 'Главный админ' : 'Админ'}
-            </span>
+            <div>
+              <p className="font-bold text-gray-900 text-base leading-tight">Trend Bakery</p>
+              <p className="text-xs text-gray-400 leading-tight">Панель управления</p>
+            </div>
           </div>
+          <span className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: '#fff0f0', color: BRAND }}>
+            {role === 'super' ? '👑 Главный' : 'Администратор'}
+          </span>
         </div>
+
+        {/* Tabs */}
+        {role === 'super' && (
+          <div className="flex gap-1">
+            {(['products', 'admins'] as const).map(t => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className="flex-1 py-2.5 text-sm font-semibold rounded-none border-b-2 transition-colors"
+                style={{
+                  borderBottomColor: tab === t ? BRAND : 'transparent',
+                  color: tab === t ? BRAND : '#9ca3af',
+                  background: 'transparent',
+                }}
+              >
+                {t === 'products' ? 'Товары' : 'Администраторы'}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Ваши товары</h1>
-          <button
-            onClick={openAddModal}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#ff6b00] text-white text-sm font-medium rounded-xl hover:bg-[#e66000] shadow-sm transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Добавить
-          </button>
-        </div>
+      <div className="flex-1 px-4 py-5 max-w-2xl w-full mx-auto">
+        {/* ── Products Tab ─────────────────────────────────────────────────── */}
+        {tab === 'products' && (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-lg font-bold text-gray-900">
+                Товары <span className="text-gray-400 font-normal text-sm">({products.length})</span>
+              </p>
+              <button
+                onClick={openAddModal}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white shadow-sm active:scale-95 transition-transform"
+                style={{ background: BRAND }}
+              >
+                <Plus className="w-4 h-4" />
+                Добавить
+              </button>
+            </div>
 
-        {error && (
-          <div className="mb-6 bg-red-50 p-4 rounded-xl border border-red-100 text-red-600">{error}</div>
-        )}
-
-        <div className="bg-white shadow-sm rounded-2xl border border-gray-200 overflow-hidden">
-          <ul className="divide-y divide-gray-200">
-            {products.map((product) => (
-              <li key={product.id} className="p-4 sm:px-6 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-16 h-16 rounded-xl object-cover border border-gray-100 shadow-sm"
-                    />
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 truncate">{product.name}</p>
-                      <p className="text-sm text-gray-500 mt-1">{product.price.toLocaleString()} сум</p>
-                      <span className="inline-flex mt-1 items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                        {product.category === 'home' ? 'Хлеб' : 'Сдоба'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 ml-4">
-                    <button
-                      onClick={() => openEditModal(product)}
-                      className="p-2 text-gray-400 hover:text-[#ff6b00] hover:bg-orange-50 rounded-lg transition-colors"
-                    >
-                      <Edit2 className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))}
+            {error && (
+              <div className="mb-4 p-3 rounded-xl text-sm text-red-600 bg-red-50">{error}</div>
+            )}
 
             {products.length === 0 && !loading && (
-              <li className="p-12 text-center text-gray-500">
-                <p>Товаров пока нет.</p>
+              <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm">
+                <div className="text-4xl mb-3">🍞</div>
+                <p className="text-gray-500 text-sm mb-4">Товаров пока нет</p>
                 <button
                   onClick={handleSeed}
-                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white"
+                  style={{ background: BRAND }}
                 >
                   Загрузить стартовые товары
                 </button>
-              </li>
+              </div>
             )}
-          </ul>
-        </div>
 
-        {/* Admins management — super-admin only */}
-        {role === 'super' && (
-          <div className="mt-10">
+            <div className="space-y-2">
+              {products.map(product => (
+                <div key={product.id} className="bg-white rounded-2xl border border-gray-100 p-3 shadow-sm flex items-center gap-3">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-16 h-16 rounded-xl object-cover flex-shrink-0 bg-gray-100"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm truncate">{product.name}</p>
+                    <p className="text-sm font-bold mt-0.5" style={{ color: BRAND }}>
+                      {product.price.toLocaleString()} сум
+                    </p>
+                    <span className="inline-flex mt-1 items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                      {product.category === 'home' ? 'Для дома' : 'Розничные сети'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1 flex-shrink-0">
+                    <button
+                      onClick={() => openEditModal(product)}
+                      className="p-2 rounded-xl bg-gray-50 text-gray-500 hover:text-gray-900 transition-colors"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="p-2 rounded-xl bg-gray-50 transition-colors"
+                      style={{ color: BRAND }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* ── Admins Tab ───────────────────────────────────────────────────── */}
+        {tab === 'admins' && role === 'super' && (
+          <>
             <div className="flex items-center gap-2 mb-4">
-              <Users className="w-5 h-5 text-gray-700" />
-              <h2 className="text-xl font-bold text-gray-900">Администраторы</h2>
+              <Users className="w-5 h-5 text-gray-400" />
+              <p className="text-lg font-bold text-gray-900">Администраторы</p>
             </div>
 
-            <div className="bg-white shadow-sm rounded-2xl border border-gray-200 overflow-hidden">
-              <ul className="divide-y divide-gray-200">
-                {admins.map((a) => (
-                  <li key={a.telegram_id} className="p-4 sm:px-6 flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {a.name || 'Без имени'}{' '}
-                        {a.role === 'super' && (
-                          <span className="text-xs text-orange-600 font-medium">(главный)</span>
-                        )}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">ID: {a.telegram_id}</p>
+            <div className="space-y-2 mb-4">
+              {admins.map(a => (
+                <div key={a.telegram_id} className="bg-white rounded-2xl border border-gray-100 px-4 py-3 shadow-sm flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-gray-900 text-sm">{a.name || 'Без имени'}</p>
+                      {a.role === 'super' && (
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#fff0f0', color: BRAND }}>
+                          👑 Главный
+                        </span>
+                      )}
                     </div>
-                    {a.role !== 'super' && (
-                      <button
-                        onClick={() => handleRemoveAdmin(a.telegram_id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    )}
-                  </li>
-                ))}
-              </ul>
+                    <p className="text-xs text-gray-400 mt-0.5">ID: {a.telegram_id}</p>
+                  </div>
+                  {a.role !== 'super' && (
+                    <button
+                      onClick={() => handleRemoveAdmin(a.telegram_id)}
+                      className="p-2 rounded-xl bg-gray-50"
+                      style={{ color: BRAND }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
 
-              <form onSubmit={handleAddAdmin} className="p-4 sm:px-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row gap-3">
+            {/* Add admin form */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 border-b border-gray-50">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-gray-400" />
+                  <p className="font-semibold text-gray-900 text-sm">Добавить администратора</p>
+                </div>
+              </div>
+              <form onSubmit={handleAddAdmin} className="p-4 space-y-3">
                 <input
                   type="number"
                   placeholder="Telegram ID"
                   required
                   value={newAdminId}
-                  onChange={(e) => setNewAdminId(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00] sm:text-sm"
+                  onChange={e => setNewAdminId(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200 transition-colors"
                 />
                 <input
                   type="text"
                   placeholder="Имя (необязательно)"
                   value={newAdminName}
-                  onChange={(e) => setNewAdminName(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00] sm:text-sm"
+                  onChange={e => setNewAdminName(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200 transition-colors"
                 />
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#ff6b00] text-white text-sm font-medium rounded-lg hover:bg-[#e66000] shadow-sm transition-colors"
+                  className="w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  style={{ background: BRAND }}
                 >
-                  <UserPlus className="w-4 h-4" />
-                  Добавить
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><UserPlus className="w-4 h-4" /> Добавить</>}
                 </button>
               </form>
+              <div className="px-4 pb-4">
+                <div className="bg-gray-50 rounded-xl p-3 flex items-start gap-2">
+                  <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-gray-500">Telegram ID можно узнать через бота <span className="font-medium">@userinfobot</span></p>
+                </div>
+              </div>
             </div>
-            <p className="mt-2 text-xs text-gray-400">
-              Новый человек узнаёт свой Telegram ID через бота @userinfobot.
-            </p>
-          </div>
+          </>
         )}
       </div>
 
-      {/* Product Modal */}
+      {/* ── Product Modal ──────────────────────────────────────────────────── */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true" onClick={() => setIsModalOpen(false)}>
-              <div className="absolute inset-0 bg-gray-900 opacity-50"></div>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsModalOpen(false)} />
+          <div className="relative w-full max-w-lg bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-slide-up">
+            <div className="px-5 pt-5 pb-4 border-b border-gray-100">
+              <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-4 sm:hidden" />
+              <h3 className="text-lg font-bold text-gray-900">
+                {editingProduct ? 'Редактировать товар' : 'Новый товар'}
+              </h3>
             </div>
 
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div className="relative z-10 inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-              <form onSubmit={handleSubmit}>
-                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <h3 className="text-xl leading-6 font-bold text-gray-900 mb-6">
-                    {editingProduct ? 'Редактировать товар' : 'Новый товар'}
-                  </h3>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Фотография</label>
-                      <div className="mt-1 flex items-center gap-4">
-                        {formData.image ? (
-                          <img src={formData.image} alt="Preview" className="w-20 h-20 rounded-xl object-cover shadow-sm border border-gray-200" />
-                        ) : (
-                          <div className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
-                            <ImageIcon className="w-6 h-6 text-gray-400" />
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          disabled={uploadingImage}
-                          className="bg-white py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors"
-                        >
-                          {uploadingImage ? 'Загрузка...' : 'Выбрать фото'}
-                        </button>
-                        <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
+            <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[70vh]">
+              <div className="p-5 space-y-4">
+                {/* Image */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Фото</label>
+                  <div className="flex items-center gap-3">
+                    {formData.image ? (
+                      <img src={formData.image} alt="preview" className="w-20 h-20 rounded-2xl object-cover border border-gray-100" />
+                    ) : (
+                      <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50">
+                        <ImageIcon className="w-6 h-6 text-gray-300" />
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Название</label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00] sm:text-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Описание</label>
-                      <textarea
-                        rows={2}
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00] sm:text-sm"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Цена (сум)</label>
-                        <input
-                          type="number"
-                          required
-                          value={formData.price}
-                          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00] sm:text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Категория</label>
-                        <select
-                          value={formData.category}
-                          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-[#ff6b00] focus:border-[#ff6b00] sm:text-sm"
-                        >
-                          <option value="home">Хлеб</option>
-                          <option value="retail">Сдоба</option>
-                        </select>
-                      </div>
-                    </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingImage}
+                      className="flex-1 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-600"
+                    >
+                      {uploadingImage ? 'Загрузка...' : 'Выбрать фото'}
+                    </button>
+                    <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
                   </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200">
-                  <button
-                    type="submit"
-                    disabled={loading || uploadingImage}
-                    className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-[#ff6b00] text-base font-medium text-white hover:bg-[#e66000] focus:outline-none sm:ml-3 sm:w-auto sm:text-sm transition-colors"
-                  >
-                    {loading ? 'Сохранение...' : 'Сохранить'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors"
-                  >
-                    Отмена
-                  </button>
+
+                {/* Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Название</label>
+                  <input
+                    type="text" required value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200 transition-colors"
+                    placeholder="Мини хлебное ассорти"
+                  />
                 </div>
-              </form>
-            </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Описание</label>
+                  <textarea
+                    rows={3} value={formData.description}
+                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200 transition-colors resize-none"
+                    placeholder="Состав и количество..."
+                  />
+                </div>
+
+                {/* Price + Category */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Цена (сум)</label>
+                    <input
+                      type="number" required value={formData.price}
+                      onChange={e => setFormData({ ...formData, price: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200 transition-colors"
+                      placeholder="230000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Категория</label>
+                    <select
+                      value={formData.category}
+                      onChange={e => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200 transition-colors"
+                    >
+                      <option value="home">Для дома</option>
+                      <option value="retail">Розничные</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="px-5 pb-5 flex gap-3">
+                <button
+                  type="button" onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 bg-white"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit" disabled={loading || uploadingImage}
+                  className="flex-1 py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                  style={{ background: BRAND }}
+                >
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Сохранить'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
