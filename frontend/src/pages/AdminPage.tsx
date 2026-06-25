@@ -10,18 +10,18 @@ interface Admin {
   role: 'super' | 'admin';
 }
 
-// Raw Telegram initData — signed payload the backend verifies via HMAC.
-const initData: string = (() => {
+// Read initData lazily at call time — it may not be populated at module load.
+const getInitData = (): string => {
   try {
     return WebApp.initData || '';
   } catch {
     return '';
   }
-})();
+};
 
 const authHeaders = (json = false): Record<string, string> => ({
   ...(json ? { 'Content-Type': 'application/json' } : {}),
-  'X-Telegram-Init-Data': initData,
+  'X-Telegram-Init-Data': getInitData(),
 });
 
 export function AdminPage() {
@@ -251,10 +251,11 @@ export function AdminPage() {
           Эта панель доступна только администраторам. Откройте мини-приложение в Telegram под учётной записью администратора.
         </p>
         <div className="mt-6 bg-white rounded-xl border border-gray-200 p-4 text-left w-full max-w-sm">
-          <p className="text-xs font-mono text-gray-500 break-all">initData length: {initData.length}</p>
+          <p className="text-xs font-mono text-gray-500 break-all">initData length: {getInitData().length}</p>
           <button
             onClick={async () => {
-              const res = await fetch('/api/me', { headers: { 'X-Telegram-Init-Data': initData } });
+              const id = getInitData();
+              const res = await fetch('/api/me', { headers: { 'X-Telegram-Init-Data': id } });
               const d = await res.json();
               alert(JSON.stringify(d, null, 2));
             }}
