@@ -69,22 +69,40 @@ export default function ProfilePage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-  const tgUser = (() => {
-    try { return (window as any).Telegram?.WebApp?.initDataUnsafe?.user } catch { return null }
-  })()
-
+  const [tgUser, setTgUser] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [adminRole, setAdminRole] = useState<'super' | 'admin' | null>(null)
   const [editPhone, setEditPhone] = useState(false)
   const [phoneDraft, setPhoneDraft] = useState(phone)
 
   useEffect(() => {
-    const id = getInitData()
-    if (!id) return
-    fetch('/api/admins', { headers: { 'X-Telegram-Init-Data': id } })
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.me) { setIsAdmin(true); setAdminRole(d.me.role) } })
-      .catch(() => {})
+    const getTgUser = () => {
+      try { return (window as any).Telegram?.WebApp?.initDataUnsafe?.user ?? null } catch { return null }
+    }
+
+    const checkAdmin = async () => {
+      const id = getInitData()
+      if (!id) return false
+      try {
+        const r = await fetch('/api/admins', { headers: { 'X-Telegram-Init-Data': id } })
+        if (!r.ok) return false
+        const d = await r.json()
+        if (d?.me) { setIsAdmin(true); setAdminRole(d.me.role); return true }
+      } catch {}
+      return false
+    }
+
+    // Try immediately, then retry — Telegram WebApp may not be ready at mount
+    const tryAll = async () => {
+      const u = getTgUser()
+      if (u) setTgUser(u)
+      await checkAdmin()
+    }
+
+    tryAll()
+    const t1 = setTimeout(tryAll, 400)
+    const t2 = setTimeout(tryAll, 1200)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
 
   const handleLang = (code: Language) => {

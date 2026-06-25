@@ -35,18 +35,15 @@ export default function App() {
 
     if (!wa) return
 
-    try {
-      wa.ready?.()
-      wa.expand?.()
-    } catch (e) {}
+    try { wa.ready?.() } catch (e) {}
+    try { wa.expand?.() } catch (e) {}
+    try { wa.disableVerticalSwipes?.() } catch (e) {}
 
-    try {
-      wa.requestFullscreen?.()
-    } catch (e) {}
-
-    try {
-      wa.disableVerticalSwipes?.()
-    } catch (e) {}
+    // requestFullscreen needs a short delay on some Telegram versions
+    const tryFullscreen = () => { try { wa.requestFullscreen?.() } catch (e) {} }
+    tryFullscreen()
+    setTimeout(tryFullscreen, 300)
+    setTimeout(tryFullscreen, 1000)
 
     const updateSafeArea = () => {
       try {
