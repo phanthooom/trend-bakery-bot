@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { useSafeArea } from '../context/SafeAreaContext'
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from '../i18n'
 
 declare global {
   interface Window {
@@ -16,23 +17,21 @@ export default function MapPage() {
   const navigate = useNavigate()
   const { setAddress, addSavedAddress } = useStore()
   const { top: safeTop } = useSafeArea()
+  const { t } = useTranslation()
   const [step, setStep] = useState<'map' | 'form'>('map')
-  const [detectedAddress, setDetectedAddress] = useState('Определяем адрес...')
+  const [detectedAddress, setDetectedAddress] = useState('')
   const [coords, setCoords] = useState<[number, number]>(TASHKENT as [number, number])
   const mapRef = useRef<HTMLDivElement>(null)
   const ymapsRef = useRef<any>(null)
 
-  const [form, setForm] = useState({
-    apartment: '',
-    intercom: '',
-    entrance: '',
-    floor: '',
-  })
+  const [form, setForm] = useState({ apartment: '', intercom: '', entrance: '', floor: '' })
 
   const btnTop = `max(${safeTop + 12}px, calc(env(safe-area-inset-top) + 12px))`
 
   useEffect(() => {
     if (step !== 'map') return
+
+    setDetectedAddress(t('detectingAddress'))
 
     const scriptId = 'yandex-maps-script'
     const existing = document.getElementById(scriptId)
@@ -49,7 +48,6 @@ export default function MapPage() {
 
         ymapsRef.current = map
 
-        // Hide native Yandex branding/links
         const hideStyle = document.createElement('style')
         hideStyle.textContent = `
           .ymaps-2-1-79-copyright,
@@ -63,7 +61,6 @@ export default function MapPage() {
           const [lat, lon] = center
           setCoords([lat, lon])
 
-          // Primary: Nominatim (OpenStreetMap) — no API key required
           try {
             const resp = await fetch(
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
@@ -82,7 +79,6 @@ export default function MapPage() {
             }
           } catch {}
 
-          // Fallback: Yandex REST geocoder
           try {
             const url = new URL('https://geocode-maps.yandex.ru/v1/')
             url.searchParams.set('apikey', YANDEX_API_KEY)
@@ -99,7 +95,6 @@ export default function MapPage() {
             }
           } catch {}
 
-          // Final fallback: ymaps.geocode
           try {
             const res = await window.ymaps.geocode(center, { results: 1 })
             const obj = res.geoObjects.get(0)
@@ -108,16 +103,12 @@ export default function MapPage() {
           } catch {}
         }
 
-        // Initial geocode
         reverseGeocode(TASHKENT)
 
-        // On every map move end — debounced 380ms (pharmaclick pattern)
         let debounceTimer: ReturnType<typeof setTimeout>
         map.events.add('actionend', () => {
           clearTimeout(debounceTimer)
-          debounceTimer = setTimeout(() => {
-            reverseGeocode(map.getCenter())
-          }, 380)
+          debounceTimer = setTimeout(() => reverseGeocode(map.getCenter()), 380)
         })
       })
     }
@@ -139,10 +130,6 @@ export default function MapPage() {
       ymapsRef.current = null
     }
   }, [step])
-
-  const handleSaveMap = () => {
-    setStep('form')
-  }
 
   const handleSaveAddress = () => {
     const newAddr = {
@@ -167,7 +154,7 @@ export default function MapPage() {
           className="px-4 pb-3 border-b border-gray-100"
           style={{ paddingTop: `max(${safeTop + 16}px, calc(env(safe-area-inset-top) + 16px))` }}
         >
-          <h1 className="font-bold text-xl text-gray-900">Добавить новый адрес</h1>
+          <h1 className="font-bold text-xl text-gray-900">{t('addNewAddress')}</h1>
           <p className="text-gray-500 text-sm mt-1 truncate">{detectedAddress}</p>
         </div>
 
@@ -175,43 +162,40 @@ export default function MapPage() {
           <input
             value={detectedAddress}
             onChange={(e) => setDetectedAddress(e.target.value)}
-            placeholder="Адрес"
+            placeholder={t('address')}
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#C8102E]"
           />
           <div className="grid grid-cols-2 gap-3">
             <input
               value={form.apartment}
               onChange={(e) => setForm({ ...form, apartment: e.target.value })}
-              placeholder="Кв/Офис"
+              placeholder={t('apartment')}
               className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#C8102E]"
             />
             <input
               value={form.intercom}
               onChange={(e) => setForm({ ...form, intercom: e.target.value })}
-              placeholder="Домофон"
+              placeholder={t('intercom')}
               className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#C8102E]"
             />
             <input
               value={form.entrance}
               onChange={(e) => setForm({ ...form, entrance: e.target.value })}
-              placeholder="Подъезд"
+              placeholder={t('entrance')}
               className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#C8102E]"
             />
             <input
               value={form.floor}
               onChange={(e) => setForm({ ...form, floor: e.target.value })}
-              placeholder="Этаж"
+              placeholder={t('floor')}
               className="border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 outline-none focus:border-[#C8102E]"
             />
           </div>
         </div>
 
         <div className="px-4 pb-8">
-          <button
-            onClick={handleSaveAddress}
-            className="w-full bg-[#C8102E] text-white py-4 rounded-xl font-bold text-base"
-          >
-            Сохранить
+          <button onClick={handleSaveAddress} className="w-full bg-[#C8102E] text-white py-4 rounded-xl font-bold text-base">
+            {t('save')}
           </button>
         </div>
       </div>
@@ -221,7 +205,7 @@ export default function MapPage() {
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <div className="relative flex-1">
-        {/* Back button */}
+        {/* Back */}
         <button
           onClick={() => navigate(-1)}
           style={{ top: btnTop }}
@@ -232,7 +216,7 @@ export default function MapPage() {
           </svg>
         </button>
 
-        {/* Search button */}
+        {/* Search */}
         <button
           style={{ top: btnTop }}
           className="absolute right-4 z-20 bg-white rounded-xl w-12 h-12 flex items-center justify-center shadow-md"
@@ -243,26 +227,22 @@ export default function MapPage() {
           </svg>
         </button>
 
-        {/* Map container */}
+        {/* Map */}
         <div ref={mapRef} className="w-full h-full min-h-[calc(100vh-90px)]" />
 
-        {/* Zoom controls */}
+        {/* Zoom */}
         <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex flex-col bg-white rounded-xl shadow-md overflow-hidden">
           <button
             onClick={() => ymapsRef.current?.setZoom(ymapsRef.current.getZoom() + 1, { duration: 200 })}
             className="w-12 h-12 flex items-center justify-center text-2xl text-gray-700 border-b border-gray-100 active:bg-gray-50"
-          >
-            +
-          </button>
+          >+</button>
           <button
             onClick={() => ymapsRef.current?.setZoom(ymapsRef.current.getZoom() - 1, { duration: 200 })}
             className="w-12 h-12 flex items-center justify-center text-2xl text-gray-700 active:bg-gray-50"
-          >
-            −
-          </button>
+          >−</button>
         </div>
 
-        {/* Geolocation button — bottom-right */}
+        {/* Geolocation */}
         <button
           onClick={() => {
             navigator.geolocation.getCurrentPosition((pos) => {
@@ -279,7 +259,7 @@ export default function MapPage() {
           </svg>
         </button>
 
-        {/* "Открыть Яндекс Карты" custom pill — bottom-left */}
+        {/* Open Yandex Maps */}
         <a
           href={`https://yandex.uz/maps/?ll=${coords[1]},${coords[0]}&z=15`}
           target="_blank"
@@ -289,10 +269,10 @@ export default function MapPage() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="#C8102E">
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
           </svg>
-          Открыть в Яндекс Картах
+          {t('openYandexMaps')}
         </a>
 
-        {/* Fixed center pin — dark square with delivery person */}
+        {/* Center pin */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-10 pointer-events-none">
           <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center shadow-lg">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
@@ -305,11 +285,8 @@ export default function MapPage() {
 
       {/* Save button */}
       <div className="px-4 pt-3 pb-6 bg-white">
-        <button
-          onClick={handleSaveMap}
-          className="w-full bg-[#C8102E] text-white py-5 rounded-2xl font-bold text-base"
-        >
-          Сохранить
+        <button onClick={() => setStep('form')} className="w-full bg-[#C8102E] text-white py-5 rounded-2xl font-bold text-base">
+          {t('save')}
         </button>
       </div>
     </div>

@@ -192,7 +192,7 @@ export default function MenuPage() {
 
         {/* Products */}
         {!isLoadingProducts && filtered.length === 0 && (
-          <div className="text-center text-gray-500 py-12">Ничего не найдено</div>
+          <div className="text-center text-gray-500 py-12">{t('notFound')}</div>
         )}
         
         {!isLoadingProducts && filtered.map((product) => (

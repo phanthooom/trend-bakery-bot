@@ -107,7 +107,7 @@ export default function AddressesBottomSheet({ onClose }: Props) {
             )
           })}
           {savedAddresses.length === 0 && (
-            <p className="py-10 text-center text-gray-400 text-sm">Нет сохранённых адресов</p>
+            <p className="py-10 text-center text-gray-400 text-sm">{t('noSavedAddresses')}</p>
           )}
         </div>
 

@@ -1,18 +1,19 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { haptic } from '../utils/haptic'
+import { useTranslation } from '../i18n'
 
 export default function BottomNav() {
   const navigate = useNavigate()
   const location = useLocation()
   const cartCount = useStore((s) => s.cartCount())
+  const { t } = useTranslation()
 
   const tabs = [
     {
       path: '/',
-      label: 'Меню',
+      label: t('menu'),
       icon: (active: boolean) => (
-        // Receipt / menu-card icon
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path
             d="M6 2h12a1 1 0 011 1v16.5l-1.5-.75-1.5.75-1.5-.75-1.5.75-1.5-.75-1.5.75-1.5-.75-1.5.75V3a1 1 0 011-1z"
@@ -30,10 +31,9 @@ export default function BottomNav() {
     },
     {
       path: '/cart',
-      label: 'Корзина',
+      label: t('cart'),
       icon: (active: boolean) => (
         <div className="relative">
-          {/* Shopping cart icon */}
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path
               d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"
@@ -55,7 +55,7 @@ export default function BottomNav() {
     },
     {
       path: '/profile',
-      label: 'Профиль',
+      label: t('profile'),
       icon: (active: boolean) => (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="8" r="4" stroke={active ? '#C8102E' : '#9ca3af'} strokeWidth="1.5" />
