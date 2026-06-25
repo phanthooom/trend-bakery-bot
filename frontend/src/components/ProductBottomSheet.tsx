@@ -26,6 +26,13 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
     return () => cancelAnimationFrame(id)
   }, [])
 
+  // Lock body scroll while sheet is open
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [])
+
   const handleClose = () => {
     haptic.light()
     setOpen(false)
@@ -90,7 +97,7 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
         <div className="flex-1 overflow-y-auto px-5 pb-2 min-h-0">
           {/* Image */}
           <img
-            src={imgError ? '/bread-placeholder.jpg' : product.image}
+            src={imgError ? 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&q=80' : product.image}
             alt={product.name}
             onError={() => setImgError(true)}
             className="w-full h-44 object-cover rounded-2xl mb-4"

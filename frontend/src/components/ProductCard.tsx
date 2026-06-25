@@ -42,7 +42,7 @@ export default function ProductCard({ product, onImageClick }: Props) {
   return (
     <div className="bg-white mb-4">
       <img
-        src={imgError ? '/bread-placeholder.jpg' : product.image}
+        src={imgError ? 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500&q=80' : product.image}
         alt={product.name}
         onError={() => setImgError(true)}
         onClick={handleImageClick}
