@@ -250,6 +250,19 @@ export function AdminPage() {
         <p className="mt-2 text-gray-500 max-w-sm">
           Эта панель доступна только администраторам. Откройте мини-приложение в Telegram под учётной записью администратора.
         </p>
+        <div className="mt-6 bg-white rounded-xl border border-gray-200 p-4 text-left w-full max-w-sm">
+          <p className="text-xs font-mono text-gray-500 break-all">initData length: {initData.length}</p>
+          <button
+            onClick={async () => {
+              const res = await fetch('/api/me', { headers: { 'X-Telegram-Init-Data': initData } });
+              const d = await res.json();
+              alert(JSON.stringify(d, null, 2));
+            }}
+            className="mt-3 w-full py-2 px-3 bg-gray-100 rounded-lg text-xs font-medium text-gray-700"
+          >
+            Показать debug info
+          </button>
+        </div>
       </div>
     );
   }
