@@ -1,15 +1,13 @@
+import { randomInt } from 'crypto';
 import { getDb } from './_firebase';
 import { requireAdmin } from './_auth';
+import { setCors } from './_cors';
+import { handleError } from './_errors';
+import { sanitizeProductFields } from './_sanitize';
+import { rateLimit, clientIp } from './_ratelimit';
 
 export default async function handler(req: any, res: any) {
-  // CORS setup
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Telegram-Init-Data'
-  );
+  setCors(req, res);
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -20,6 +18,10 @@ export default async function handler(req: any, res: any) {
 
   try {
     if (req.method === 'GET') {
+      if (!rateLimit(`products:get:${clientIp(req)}`, 60, 60_000)) {
+        return res.status(429).json({ error: 'Too many requests' });
+      }
+
       const snap = await db.collection('products').orderBy('created_at', 'desc').get();
       const products = snap.docs.map((d) => {
         const data = d.data();
@@ -35,45 +37,50 @@ export default async function handler(req: any, res: any) {
       return res.status(200).json(products);
     }
 
-    // Writes require a verified Telegram admin.
     const admin = await requireAdmin(req);
     if (!admin) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     if (req.method === 'POST') {
-      const { name, description, price, image, category } = req.body;
-      if (!name || price == null || !category) {
-        return res.status(400).json({ error: 'Missing required fields' });
+      const fields = sanitizeProductFields(req.body);
+      if (!fields.name || Number.isNaN(fields.price) || !fields.category) {
+        return res.status(400).json({ error: 'Missing or invalid required fields' });
       }
 
-      const id = Date.now();
+      const id = randomInt(1_000_000, 2 ** 48);
+      const now = Date.now();
       const product = {
         id,
-        name,
-        description: description || '',
-        price: Number(price),
-        image: image || '',
-        category,
-        created_at: id,
+        name: fields.name,
+        description: fields.description,
+        price: fields.price,
+        image: fields.image,
+        category: fields.category,
+        created_at: now,
       };
       await db.collection('products').doc(String(id)).set(product);
       return res.status(201).json(product);
     }
 
     if (req.method === 'PUT') {
-      const { id, name, description, price, image, category } = req.body;
-      if (!id || !name || price == null || !category) {
-        return res.status(400).json({ error: 'Missing required fields' });
+      const { id } = req.body;
+      if (!id) {
+        return res.status(400).json({ error: 'Missing product id' });
+      }
+
+      const fields = sanitizeProductFields(req.body);
+      if (!fields.name || Number.isNaN(fields.price) || !fields.category) {
+        return res.status(400).json({ error: 'Missing or invalid required fields' });
       }
 
       const ref = db.collection('products').doc(String(id));
       const update = {
-        name,
-        description: description || '',
-        price: Number(price),
-        image: image || '',
-        category,
+        name: fields.name,
+        description: fields.description,
+        price: fields.price,
+        image: fields.image,
+        category: fields.category,
       };
       await ref.set(update, { merge: true });
       const doc = await ref.get();
@@ -85,13 +92,19 @@ export default async function handler(req: any, res: any) {
       if (!id) {
         return res.status(400).json({ error: 'Missing product id' });
       }
+
+      await db.collection('audit_log').add({
+        action: 'delete_product',
+        product_id: String(id),
+        by: admin.user.id,
+        at: Date.now(),
+      });
       await db.collection('products').doc(String(id)).delete();
       return res.status(200).json({ success: true });
     }
 
     res.status(405).json({ error: 'Method Not Allowed' });
-  } catch (error: any) {
-    console.error('API Error:', error);
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    handleError(res, error);
   }
 }

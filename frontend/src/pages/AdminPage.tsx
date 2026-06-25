@@ -225,19 +225,7 @@ export function AdminPage() {
         <p className="mt-2 text-gray-400 text-sm max-w-xs leading-relaxed">
           Панель доступна только администраторам. Откройте приложение в Telegram под нужной учётной записью.
         </p>
-        <div className="mt-8 w-full max-w-xs bg-gray-50 rounded-2xl p-4 text-left">
-          <p className="text-xs text-gray-400 font-mono">initData: {getInitData().length} chars</p>
-          <button
-            onClick={async () => {
-              const res = await fetch('/api/me', { headers: { 'X-Telegram-Init-Data': getInitData() } });
-              const d = await res.json();
-              alert(JSON.stringify(d, null, 2));
-            }}
-            className="mt-3 w-full py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-white border border-gray-200"
-          >
-            Debug info
-          </button>
-        </div>
+
       </div>
     );
   }

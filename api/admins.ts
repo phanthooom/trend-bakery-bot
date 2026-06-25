@@ -1,15 +1,11 @@
 import { getDb } from './_firebase';
 import { requireAdmin } from './_auth';
+import { setCors } from './_cors';
+import { handleError } from './_errors';
+import { sanitizeText } from './_sanitize';
 
 export default async function handler(req: any, res: any) {
-  // CORS setup
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,DELETE,POST');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Telegram-Init-Data'
-  );
+  setCors(req, res);
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -25,13 +21,11 @@ export default async function handler(req: any, res: any) {
     const db = getDb();
 
     if (req.method === 'GET') {
-      // Any admin can see the list (and learn their own role on the client).
       const snap = await db.collection('admins').orderBy('created_at', 'asc').get();
       const admins = snap.docs.map((d) => d.data());
       return res.status(200).json({ admins, me: admin });
     }
 
-    // Mutations are super-admin only.
     if (admin.role !== 'super') {
       return res.status(403).json({ error: 'Forbidden: super-admin only' });
     }
@@ -50,7 +44,7 @@ export default async function handler(req: any, res: any) {
 
       const newAdmin = {
         telegram_id: tid,
-        name: name || '',
+        name: sanitizeText(name, 200),
         username: '',
         role: 'admin',
         added_by: admin.user.id,
@@ -66,7 +60,6 @@ export default async function handler(req: any, res: any) {
       if (!tid) {
         return res.status(400).json({ error: 'Missing id' });
       }
-      // Guard: can't remove yourself or a super-admin.
       if (tid === String(admin.user.id)) {
         return res.status(400).json({ error: 'Cannot remove yourself' });
       }
@@ -79,8 +72,7 @@ export default async function handler(req: any, res: any) {
     }
 
     res.status(405).json({ error: 'Method Not Allowed' });
-  } catch (error: any) {
-    console.error('API Error:', error);
-    res.status(500).json({ error: error.message });
+  } catch (error) {
+    handleError(res, error);
   }
 }

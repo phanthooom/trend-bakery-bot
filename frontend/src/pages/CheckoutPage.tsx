@@ -50,7 +50,8 @@ export default function CheckoutPage() {
       const response = await fetch(`/api/order`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-Telegram-Init-Data': tgApp?.initData ?? '',
         },
         body: JSON.stringify(orderData)
       })
