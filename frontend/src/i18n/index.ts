@@ -21,6 +21,7 @@ const translations = {
     // Products
     add: 'Добавить',
     addToCart: 'В корзину',
+    cost: 'Стоимость',
     // Navigation
     menu: 'Меню',
     cart: 'Корзина',
@@ -80,6 +81,7 @@ const translations = {
     notFound: 'Hech narsa topilmadi',
     add: 'Qo\'shish',
     addToCart: 'Savatga',
+    cost: 'Narxi',
     menu: 'Menyu',
     cart: 'Savat',
     profile: 'Profil',
@@ -132,6 +134,7 @@ const translations = {
     notFound: 'Nothing found',
     add: 'Add',
     addToCart: 'Add to cart',
+    cost: 'Price',
     menu: 'Menu',
     cart: 'Cart',
     profile: 'Profile',

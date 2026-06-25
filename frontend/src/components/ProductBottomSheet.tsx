@@ -18,7 +18,7 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
   const cartItem = cart.find((i) => i.id === product.id)
   const quantity = cartItem?.quantity ?? 0
 
-  const formatPrice = (p: number) => p.toLocaleString('ru-RU') + ' сум'
+  const formatPrice = (p: number) => p.toLocaleString('ru-RU') + ' ' + t('currency')
 
   // Trigger enter animation on next frame after mount
   useEffect(() => {
@@ -131,7 +131,7 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
         {/* Price + Cart — pinned bottom */}
         <div className="flex-shrink-0 px-5 py-4 border-t border-gray-100 bg-white flex items-center justify-between">
           <div>
-            <span className="text-xs text-gray-400">Стоимость</span>
+            <span className="text-xs text-gray-400">{t('cost')}</span>
             <p className="font-bold text-gray-900 text-xl leading-tight">{formatPrice(product.price)}</p>
           </div>
 
