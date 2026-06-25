@@ -121,13 +121,13 @@ export const useStore = create<Store>()(
     }),
     {
       name: 'trend-bakery-storage',
-      // Only persist non-sensitive preferences.
-      // savedAddresses (GPS coords), address, phone are session-only
-      // to avoid storing PII in plaintext localStorage.
       partialize: (state) => ({
         cart: state.cart,
         deliveryType: state.deliveryType,
         language: state.language,
+        phone: state.phone,
+        address: state.address,
+        savedAddresses: state.savedAddresses,
       }),
     }
   )

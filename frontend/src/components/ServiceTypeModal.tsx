@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
+import { useTranslation } from '../i18n'
 
 interface Props {
   onClose: () => void
@@ -12,14 +13,14 @@ const PICKUP_LON = 69.489162
 export default function ServiceTypeModal({ onClose }: Props) {
   const navigate = useNavigate()
   const { setDeliveryType, setAddress } = useStore()
+  const { t, language } = useTranslation()
   const [step, setStep] = useState<'select' | 'pickup'>('select')
-  const [pickupAddress, setPickupAddress] = useState('Загружаем адрес...')
+  const [pickupAddress, setPickupAddress] = useState('')
 
   useEffect(() => {
-    // Fetch pickup address via Nominatim
     fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${PICKUP_LAT}&lon=${PICKUP_LON}&zoom=18&addressdetails=1`,
-      { headers: { 'Accept-Language': 'ru' } }
+      { headers: { 'Accept-Language': language === 'en' ? 'en' : language === 'uz' ? 'uz' : 'ru' } }
     )
       .then((r) => r.json())
       .then((data) => {
@@ -27,13 +28,13 @@ export default function ServiceTypeModal({ onClose }: Props) {
         if (a) {
           const road = a.road || a.pedestrian || a.neighbourhood || a.suburb || ''
           const house = a.house_number ? ` ${a.house_number}` : ''
-          const city = a.city || a.town || a.village || 'Ташкент'
+          const city = a.city || a.town || a.village || 'Toshkent'
           const text = road ? `${road}${house}, ${city}` : (data.display_name || '')
           if (text) setPickupAddress(text)
         }
       })
-      .catch(() => setPickupAddress('Trend Bakery, Ташкент'))
-  }, [])
+      .catch(() => setPickupAddress('Trend Bakery, Toshkent'))
+  }, [language])
 
   const handleDelivery = () => {
     setDeliveryType('delivery')
@@ -45,7 +46,7 @@ export default function ServiceTypeModal({ onClose }: Props) {
   const handlePickupConfirm = () => {
     setDeliveryType('pickup')
     setAddress({
-      street: pickupAddress,
+      street: pickupAddress || 'Trend Bakery',
       apartment: '',
       intercom: '',
       entrance: '',
@@ -67,7 +68,6 @@ export default function ServiceTypeModal({ onClose }: Props) {
 
         {step === 'select' && (
           <>
-            {/* Icon */}
             <div className="flex justify-center mb-5">
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
@@ -78,10 +78,10 @@ export default function ServiceTypeModal({ onClose }: Props) {
             </div>
 
             <h2 className="text-center text-2xl font-bold text-gray-900 mb-2">
-              Выберите тип услуги
+              {t('selectServiceType')}
             </h2>
             <p className="text-center text-gray-500 text-sm mb-6">
-              Как вы хотите получить заказ?
+              {t('howToGetOrder')}
             </p>
 
             {/* Delivery */}
@@ -95,7 +95,7 @@ export default function ServiceTypeModal({ onClose }: Props) {
                 <circle cx="5.5" cy="18.5" r="1.5" stroke="#374151" strokeWidth="1.5" />
                 <circle cx="18.5" cy="18.5" r="1.5" stroke="#374151" strokeWidth="1.5" />
               </svg>
-              <span className="flex-1 text-left text-gray-700 font-medium text-base">Доставка</span>
+              <span className="flex-1 text-left text-gray-700 font-medium text-base">{t('delivery')}</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M9 18l6-6-6-6" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -109,7 +109,7 @@ export default function ServiceTypeModal({ onClose }: Props) {
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                 <path d="M13 5.48c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z" fill="#374151" />
               </svg>
-              <span className="flex-1 text-left text-gray-700 font-medium text-base">Самовывоз</span>
+              <span className="flex-1 text-left text-gray-700 font-medium text-base">{t('pickup')}</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M9 18l6-6-6-6" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -119,7 +119,6 @@ export default function ServiceTypeModal({ onClose }: Props) {
 
         {step === 'pickup' && (
           <>
-            {/* Back */}
             <button
               onClick={() => setStep('select')}
               className="flex items-center gap-2 text-gray-500 text-sm mb-5"
@@ -127,10 +126,9 @@ export default function ServiceTypeModal({ onClose }: Props) {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              Назад
+              {t('back')}
             </button>
 
-            {/* Icon */}
             <div className="flex justify-center mb-5">
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
@@ -140,13 +138,12 @@ export default function ServiceTypeModal({ onClose }: Props) {
             </div>
 
             <h2 className="text-center text-2xl font-bold text-gray-900 mb-2">
-              Самовывоз
+              {t('pickupTitle')}
             </h2>
             <p className="text-center text-gray-500 text-sm mb-5">
-              Адрес нашей пекарни
+              {t('pickupDesc')}
             </p>
 
-            {/* Map preview */}
             <a
               href={`https://yandex.uz/maps/?ll=${PICKUP_LON},${PICKUP_LAT}&z=16&pt=${PICKUP_LON},${PICKUP_LAT},pm2rdm`}
               target="_blank"
@@ -155,24 +152,25 @@ export default function ServiceTypeModal({ onClose }: Props) {
             >
               <img
                 src={`https://static-maps.yandex.ru/1.x/?ll=${PICKUP_LON},${PICKUP_LAT}&z=15&size=600,200&l=map&pt=${PICKUP_LON},${PICKUP_LAT},pm2rdm`}
-                alt="Карта"
+                alt="Map"
                 className="w-full h-40 object-cover"
               />
             </a>
 
-            {/* Address */}
             <div className="flex items-start gap-3 bg-gray-50 rounded-2xl p-4 mb-5">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-0.5 flex-shrink-0">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#C8102E" />
               </svg>
-              <p className="text-gray-800 text-sm font-medium leading-snug">{pickupAddress}</p>
+              <p className="text-gray-800 text-sm font-medium leading-snug">
+                {pickupAddress || t('loadingAddress')}
+              </p>
             </div>
 
             <button
               onClick={handlePickupConfirm}
               className="w-full bg-[#C8102E] text-white py-4 rounded-2xl font-bold text-base"
             >
-              Выбрать этот адрес
+              {t('selectThisAddress')}
             </button>
           </>
         )}

@@ -64,6 +64,14 @@ const translations = {
     // Admin
     controlPanel: 'Панель управления',
     controlPanelDesc: 'Товары, цены, администраторы',
+    // Service type modal
+    selectServiceType: 'Выберите тип услуги',
+    howToGetOrder: 'Как вы хотите получить заказ?',
+    pickupTitle: 'Самовывоз',
+    pickupDesc: 'Адрес нашей пекарни',
+    selectThisAddress: 'Выбрать этот адрес',
+    back: 'Назад',
+    loadingAddress: 'Загружаем адрес...',
   },
   uz: {
     home: 'Uy uchun',
@@ -117,6 +125,13 @@ const translations = {
     appVersion: 'Trend Bakery v1.0',
     controlPanel: 'Boshqaruv paneli',
     controlPanelDesc: 'Mahsulotlar, narxlar, adminlar',
+    selectServiceType: 'Xizmat turini tanlang',
+    howToGetOrder: 'Buyurtmani qanday olmoqchisiz?',
+    pickupTitle: 'Olib ketish',
+    pickupDesc: 'Bizning nonvoyxonamiz manzili',
+    selectThisAddress: 'Ushbu manzilni tanlash',
+    back: 'Orqaga',
+    loadingAddress: 'Manzil yuklanmoqda...',
   },
   en: {
     home: 'For Home',
@@ -170,6 +185,13 @@ const translations = {
     appVersion: 'Trend Bakery v1.0',
     controlPanel: 'Control panel',
     controlPanelDesc: 'Products, prices, administrators',
+    selectServiceType: 'Select service type',
+    howToGetOrder: 'How do you want to receive your order?',
+    pickupTitle: 'Pickup',
+    pickupDesc: 'Our bakery address',
+    selectThisAddress: 'Select this address',
+    back: 'Back',
+    loadingAddress: 'Loading address...',
   }
 } as const
 
