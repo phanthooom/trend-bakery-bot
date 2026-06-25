@@ -30,12 +30,8 @@ function SettingsRow({
   onClick?: () => void
   danger?: boolean
 }) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={!onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left ${onClick ? 'active:bg-gray-50 transition-colors' : 'cursor-default'}`}
-    >
+  const inner = (
+    <>
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${danger ? 'bg-red-50' : 'bg-gray-100'}`}>
         <span className={danger ? 'text-[#C8102E]' : 'text-gray-600'}>{icon}</span>
       </div>
@@ -49,7 +45,21 @@ function SettingsRow({
           <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )}
-    </button>
+    </>
+  )
+
+  if (onClick) {
+    return (
+      <button onClick={onClick} className={`w-full flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50 transition-colors`}>
+        {inner}
+      </button>
+    )
+  }
+
+  return (
+    <div className="w-full flex items-center gap-3 px-4 py-3.5">
+      {inner}
+    </div>
   )
 }
 
