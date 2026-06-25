@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useTranslation } from '../i18n'
+import { useTranslation, localizeProduct } from '../i18n'
 import { type Product, useStore } from '../store/useStore'
 import { haptic } from '../utils/haptic'
 
@@ -11,10 +11,11 @@ interface Props {
 export default function ProductCard({ product, onImageClick }: Props) {
   const { addToCart, updateQuantity, cart } = useStore()
   const [imgError, setImgError] = useState(false)
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
 
   const cartItem = cart.find((i) => i.id === product.id)
   const quantity = cartItem?.quantity ?? 0
+  const { name, description } = localizeProduct(product, language)
 
   const formatPrice = (price: number) =>
     price.toLocaleString('ru-RU') + ' ' + t('currency')
@@ -49,8 +50,8 @@ export default function ProductCard({ product, onImageClick }: Props) {
         className="w-full h-52 object-cover rounded-lg cursor-pointer active:opacity-75 transition-opacity"
       />
       <div className="pt-3">
-        <h3 className="font-semibold text-gray-900 text-base">{product.name}</h3>
-        <p className="text-gray-500 text-sm mt-1 line-clamp-2">{product.description}</p>
+        <h3 className="font-semibold text-gray-900 text-base">{name}</h3>
+        <p className="text-gray-500 text-sm mt-1 line-clamp-2">{description}</p>
         <div className="flex items-center justify-between mt-3">
           <span className="font-bold text-gray-900 text-base">{formatPrice(product.price)}</span>
           {quantity === 0 ? (

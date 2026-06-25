@@ -1,4 +1,4 @@
-import { useStore } from '../store/useStore'
+import { useStore, type Product } from '../store/useStore'
 
 const translations = {
   ru: {
@@ -175,6 +175,16 @@ const translations = {
 
 type Language = keyof typeof translations
 type TranslationKey = keyof typeof translations['ru']
+
+export function localizeProduct(product: Product, language: Language) {
+  const name = (language === 'uz' && product.name_uz) ? product.name_uz
+    : (language === 'en' && product.name_en) ? product.name_en
+    : product.name
+  const description = (language === 'uz' && product.description_uz) ? product.description_uz
+    : (language === 'en' && product.description_en) ? product.description_en
+    : product.description
+  return { name, description }
+}
 
 export function useTranslation() {
   const language = useStore((s) => s.language) as Language

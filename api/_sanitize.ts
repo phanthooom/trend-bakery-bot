@@ -25,6 +25,10 @@ export interface ProductFields {
   price: number;
   image: string;
   category: string;
+  name_uz?: string;
+  name_en?: string;
+  description_uz?: string;
+  description_en?: string;
 }
 
 export function sanitizeProductFields(body: Record<string, any>): ProductFields {
@@ -38,5 +42,10 @@ export function sanitizeProductFields(body: Record<string, any>): ProductFields 
     ? rawPrice
     : NaN;
 
-  return { name, description, price, image, category };
+  const result: ProductFields = { name, description, price, image, category };
+  if (body.name_uz)        result.name_uz        = sanitizeText(body.name_uz, 200);
+  if (body.name_en)        result.name_en        = sanitizeText(body.name_en, 200);
+  if (body.description_uz) result.description_uz = sanitizeText(body.description_uz, 2000);
+  if (body.description_en) result.description_en = sanitizeText(body.description_en, 2000);
+  return result;
 }

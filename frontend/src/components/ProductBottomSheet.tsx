@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { type Product, useStore } from '../store/useStore'
-import { useTranslation } from '../i18n'
+import { useTranslation, localizeProduct } from '../i18n'
 import { haptic } from '../utils/haptic'
 
 interface Props {
@@ -10,7 +10,8 @@ interface Props {
 
 export default function ProductBottomSheet({ product, onClose }: Props) {
   const { addToCart, updateQuantity, cart } = useStore()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
+  const { name, description } = localizeProduct(product, language)
   const [imgError, setImgError] = useState(false)
   // Controls CSS transition: false = off-screen, true = on-screen
   const [open, setOpen] = useState(false)
@@ -104,11 +105,11 @@ export default function ProductBottomSheet({ product, onClose }: Props) {
           />
 
           {/* Name */}
-          <h2 className="font-bold text-gray-900 text-xl mb-3 leading-snug">{product.name}</h2>
+          <h2 className="font-bold text-gray-900 text-xl mb-3 leading-snug">{name}</h2>
 
           {/* Description */}
           <div className="text-sm leading-relaxed space-y-1 text-left">
-            {product.description.split('\n').map((line, i) => {
+            {description.split('\n').map((line, i) => {
               const s = line.trim()
               if (!s) return null
               if (s.toLowerCase().includes('общее количество') || s.toLowerCase().includes('итого')) {

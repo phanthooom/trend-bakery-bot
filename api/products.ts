@@ -32,6 +32,10 @@ export default async function handler(req: any, res: any) {
           price: data.price,
           image: data.image,
           category: data.category,
+          ...(data.name_uz        && { name_uz: data.name_uz }),
+          ...(data.name_en        && { name_en: data.name_en }),
+          ...(data.description_uz && { description_uz: data.description_uz }),
+          ...(data.description_en && { description_en: data.description_en }),
         };
       });
       return res.status(200).json(products);
@@ -58,6 +62,10 @@ export default async function handler(req: any, res: any) {
         image: fields.image,
         category: fields.category,
         created_at: now,
+        ...(fields.name_uz        && { name_uz: fields.name_uz }),
+        ...(fields.name_en        && { name_en: fields.name_en }),
+        ...(fields.description_uz && { description_uz: fields.description_uz }),
+        ...(fields.description_en && { description_en: fields.description_en }),
       };
       await db.collection('products').doc(String(id)).set(product);
       return res.status(201).json(product);
@@ -75,12 +83,16 @@ export default async function handler(req: any, res: any) {
       }
 
       const ref = db.collection('products').doc(String(id));
-      const update = {
+      const update: Record<string, any> = {
         name: fields.name,
         description: fields.description,
         price: fields.price,
         image: fields.image,
         category: fields.category,
+        ...(fields.name_uz        ? { name_uz: fields.name_uz }               : { name_uz: null }),
+        ...(fields.name_en        ? { name_en: fields.name_en }               : { name_en: null }),
+        ...(fields.description_uz ? { description_uz: fields.description_uz } : { description_uz: null }),
+        ...(fields.description_en ? { description_en: fields.description_en } : { description_en: null }),
       };
       await ref.set(update, { merge: true });
       const doc = await ref.get();

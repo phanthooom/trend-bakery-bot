@@ -41,7 +41,8 @@ export function AdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '', price: '', category: 'home', image: '' });
+  const [formData, setFormData] = useState({ name: '', description: '', price: '', category: 'home', image: '', name_uz: '', name_en: '', description_uz: '', description_en: '' });
+  const [showTranslations, setShowTranslations] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [newAdminId, setNewAdminId] = useState('');
@@ -99,13 +100,15 @@ export function AdminPage() {
 
   const openAddModal = () => {
     setEditingProduct(null);
-    setFormData({ name: '', description: '', price: '', category: 'home', image: '' });
+    setFormData({ name: '', description: '', price: '', category: 'home', image: '', name_uz: '', name_en: '', description_uz: '', description_en: '' });
+    setShowTranslations(false);
     setIsModalOpen(true);
   };
 
   const openEditModal = (product: Product) => {
     setEditingProduct(product);
-    setFormData({ name: product.name, description: product.description || '', price: product.price.toString(), category: product.category, image: product.image });
+    setFormData({ name: product.name, description: product.description || '', price: product.price.toString(), category: product.category, image: product.image, name_uz: product.name_uz || '', name_en: product.name_en || '', description_uz: product.description_uz || '', description_en: product.description_en || '' });
+    setShowTranslations(!!(product.name_uz || product.name_en));
     setIsModalOpen(true);
   };
 
@@ -137,6 +140,10 @@ export function AdminPage() {
         name: formData.name, description: formData.description,
         price: Number(formData.price), category: formData.category,
         image: formData.image || 'https://images.unsplash.com/photo-1555507036-ab1f4022115c?w=500',
+        ...(formData.name_uz && { name_uz: formData.name_uz }),
+        ...(formData.name_en && { name_en: formData.name_en }),
+        ...(formData.description_uz && { description_uz: formData.description_uz }),
+        ...(formData.description_en && { description_en: formData.description_en }),
       };
       const res = await fetch('/api/products', { method, headers: authHeaders(true), body: JSON.stringify(body) });
       if (res.status === 401) { setAuth('denied'); return; }
@@ -486,6 +493,41 @@ export function AdminPage() {
                     className="w-full px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200 transition-colors resize-none"
                     placeholder="Состав и количество..."
                   />
+                </div>
+
+                {/* Translations toggle */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setShowTranslations(v => !v)}
+                    className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-gray-700"
+                  >
+                    <span>{showTranslations ? '▾' : '▸'}</span>
+                    Переводы (UZ / EN)
+                    {(formData.name_uz || formData.name_en) && <span className="text-[#C8102E] text-xs">●</span>}
+                  </button>
+                  {showTranslations && (
+                    <div className="mt-3 space-y-3 pl-3 border-l-2 border-gray-100">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">Название UZ</label>
+                          <input type="text" value={formData.name_uz} onChange={e => setFormData({ ...formData, name_uz: e.target.value })} placeholder="O'zbekcha nomi" className="w-full px-3 py-2 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200" />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-500 mb-1">Название EN</label>
+                          <input type="text" value={formData.name_en} onChange={e => setFormData({ ...formData, name_en: e.target.value })} placeholder="English name" className="w-full px-3 py-2 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Описание UZ</label>
+                        <textarea rows={2} value={formData.description_uz} onChange={e => setFormData({ ...formData, description_uz: e.target.value })} placeholder="O'zbekcha tavsif..." className="w-full px-3 py-2 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200 resize-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Описание EN</label>
+                        <textarea rows={2} value={formData.description_en} onChange={e => setFormData({ ...formData, description_en: e.target.value })} placeholder="English description..." className="w-full px-3 py-2 bg-gray-50 rounded-xl text-sm outline-none border border-transparent focus:border-gray-200 resize-none" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Price + Category */}
