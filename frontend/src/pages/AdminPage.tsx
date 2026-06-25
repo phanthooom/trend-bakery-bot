@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Edit2, Image as ImageIcon, Loader2, ShieldX, Users, UserPlus, ChevronRight } from 'lucide-react';
 import type { Product } from '../store/useStore';
 import { useSafeArea } from '../context/SafeAreaContext';
@@ -27,6 +28,7 @@ const authHeaders = (json = false): Record<string, string> => ({
 
 export function AdminPage() {
   type AuthState = 'checking' | 'authorized' | 'denied';
+  const navigate = useNavigate();
   const [auth, setAuth] = useState<AuthState>('checking');
   const [role, setRole] = useState<'super' | 'admin'>('admin');
 
@@ -247,12 +249,17 @@ export function AdminPage() {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-20 px-4 pb-0" style={{ paddingTop: Math.max(safeTop, 16) }}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: BRAND }}>
-              <span className="text-white text-base">🥨</span>
-            </div>
+            <button
+              onClick={() => navigate(-1)}
+              className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center active:scale-90 transition-transform"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M15 18l-6-6 6-6" stroke="#374151" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
             <div>
-              <p className="font-bold text-gray-900 text-base leading-tight">Trend Bakery</p>
-              <p className="text-xs text-gray-400 leading-tight">Панель управления</p>
+              <p className="font-bold text-gray-900 text-base leading-tight">Панель управления</p>
+              <p className="text-xs text-gray-400 leading-tight">Trend Bakery</p>
             </div>
           </div>
           <span className="text-xs font-semibold px-3 py-1.5 rounded-full" style={{ background: '#fff0f0', color: BRAND }}>

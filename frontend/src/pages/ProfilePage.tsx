@@ -157,16 +157,16 @@ export default function ProfilePage() {
         {/* Language */}
         <SettingsRow
           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8"/><path d="M3 12h18M12 3c-2.5 3-4 5.5-4 9s1.5 6 4 9M12 3c2.5 3 4 5.5 4 9s-1.5 6-4 9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>}
-          label="Язык / Til / Language"
+          label="Язык"
           right={
             <div className="flex bg-gray-100 rounded-xl p-0.5 gap-0.5">
               {LANGS.map(l => (
                 <button
                   key={l.code}
                   onClick={() => handleLang(l.code)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${language === l.code ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}
+                  className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${language === l.code ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400'}`}
                 >
-                  {l.flag} {l.label}
+                  {l.flag}
                 </button>
               ))}
             </div>
