@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Package, Plus, Trash2, Edit2, Image as ImageIcon, Loader2, ShieldX, Users, UserPlus } from 'lucide-react';
-import WebApp from '@twa-dev/sdk';
 import type { Product } from '../store/useStore';
 
 interface Admin {
@@ -10,10 +9,11 @@ interface Admin {
   role: 'super' | 'admin';
 }
 
-// Read initData lazily at call time — it may not be populated at module load.
+// Read initData lazily at call time via native window object.
+// @twa-dev/sdk wraps the same value but may not reflect it at module load time.
 const getInitData = (): string => {
   try {
-    return WebApp.initData || '';
+    return (window as any).Telegram?.WebApp?.initData || '';
   } catch {
     return '';
   }
