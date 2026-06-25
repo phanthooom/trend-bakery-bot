@@ -291,14 +291,32 @@ export function AdminPage() {
               <p className="text-lg font-bold text-gray-900">
                 Товары <span className="text-gray-400 font-normal text-sm">({products.length})</span>
               </p>
-              <button
-                onClick={openAddModal}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white shadow-sm active:scale-95 transition-transform"
-                style={{ background: BRAND }}
-              >
-                <Plus className="w-4 h-4" />
-                Добавить
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={async () => {
+                    if (!window.confirm('Добавить переводы UZ/EN к существующим товарам?')) return;
+                    setLoading(true);
+                    try {
+                      const res = await fetch('/api/patch-translations', { method: 'POST', headers: authHeaders() });
+                      const d = await res.json();
+                      await fetchProducts();
+                      alert(`Переведено: ${d.patched} из ${d.total} товаров`);
+                    } catch { alert('Ошибка'); } finally { setLoading(false); }
+                  }}
+                  title="Добавить переводы UZ/EN"
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-gray-600 bg-gray-100 active:scale-95 transition-transform"
+                >
+                  🌐 Перевести
+                </button>
+                <button
+                  onClick={openAddModal}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold text-white shadow-sm active:scale-95 transition-transform"
+                  style={{ background: BRAND }}
+                >
+                  <Plus className="w-4 h-4" />
+                  Добавить
+                </button>
+              </div>
             </div>
 
             {error && (
