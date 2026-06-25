@@ -66,6 +66,20 @@ def handle_start(chat_id: int) -> None:
     })
 
 
+def handle_admin(chat_id: int) -> None:
+    admin_url = WEBAPP_URL.rstrip("/") + "/admin"
+    tg_request("sendMessage", {
+        "chat_id": chat_id,
+        "text": "🔐 <b>Панель администратора</b>",
+        "parse_mode": "HTML",
+        "reply_markup": {
+            "inline_keyboard": [[
+                {"text": "⚙️ Открыть админку", "web_app": {"url": admin_url}}
+            ]]
+        },
+    })
+
+
 def handle_order(order: dict, user: dict, chat_id: int) -> None:
     items = order.get("items", [])
     total = order.get("total", 0)
@@ -115,6 +129,8 @@ class handler(BaseHTTPRequestHandler):
 
             if text.startswith("/start"):
                 handle_start(chat_id)
+            elif text.startswith("/admin"):
+                handle_admin(chat_id)
 
             web_app_data = message.get("web_app_data")
             if web_app_data:
