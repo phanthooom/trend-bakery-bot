@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Edit2, Image as ImageIcon, Loader2, ShieldX, Users, UserPlus, ChevronRight } from 'lucide-react';
 import type { Product } from '../store/useStore';
+import { useSafeArea } from '../context/SafeAreaContext';
 
 const BRAND = '#C8102E';
 
@@ -195,6 +196,8 @@ export function AdminPage() {
     }
   };
 
+  const { top: safeTop } = useSafeArea();
+
   // ─── States ───────────────────────────────────────────────────────────────
 
   if (auth === 'checking') {
@@ -241,7 +244,7 @@ export function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-20 px-4 pt-3 pb-0">
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-20 px-4 pb-0" style={{ paddingTop: Math.max(safeTop, 16) }}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: BRAND }}>
