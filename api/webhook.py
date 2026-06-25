@@ -81,32 +81,84 @@ def handle_admin(chat_id: int) -> None:
 
 
 def handle_order(order: dict, user: dict, chat_id: int) -> None:
-    items = order.get("items", [])
-    total = order.get("total", 0)
+    import time, urllib.parse
+    items   = order.get("items", [])
+    total   = order.get("total", 0)
     address = order.get("address", {})
+    phone   = order.get("phone", "не указан")
+    payment = order.get("payment", "cash")
+    comment = order.get("comment", "")
 
     save_order(order, user)
 
     tg_request("sendMessage", {
         "chat_id": chat_id,
-        "text": "✅ Заказ принят! Мы свяжемся с вами в ближайшее время.",
+        "text": "✅ <b>Ваш заказ принят!</b>\nМы свяжемся с вами в ближайшее время.",
+        "parse_mode": "HTML",
     })
 
     if ORDERS_CHAT_ID:
-        lines = ["🛒 <b>Новый заказ</b>"]
-        lines.append(f"👤 {user.get('first_name', '')} (@{user.get('username') or 'нет'})")
-        lines.append(f"📍 {address.get('street', 'не указан')}")
-        if address.get("apartment"):
-            lines.append(f"   Кв. {address['apartment']}, эт. {address.get('floor', '?')}, подъезд {address.get('entrance', '?')}")
-        lines.append("")
+        order_id = str(int(time.time()))[-5:]
+        first = user.get("first_name", "")
+        last  = user.get("last_name", "")
+        full  = f"{first} {last}".strip() or "Гость"
+        uname = f"@{user['username']}" if user.get("username") else "—"
+
+        lat = address.get("lat")
+        lon = address.get("lng")
+        addr_parts = [
+            address.get("street", ""),
+            f"кв/офис {address['apartment']}" if address.get("apartment") else "",
+            f"эт. {address['floor']}" if address.get("floor") else "",
+            f"подъезд {address['entrance']}" if address.get("entrance") else "",
+            f"домофон {address['intercom']}" if address.get("intercom") else "",
+        ]
+        addr_text = ", ".join(p for p in addr_parts if p)
+
+        if lat and lon:
+            maps_link = f"https://yandex.uz/maps/?ll={lon},{lat}&z=17&pt={lon},{lat},pm2rdm"
+            nav_link  = f"https://yandex.uz/maps/?rtext=~{lat},{lon}&rtt=auto"
+        else:
+            q = urllib.parse.quote(address.get("street", ""))
+            maps_link = f"https://yandex.uz/maps/?text={q}"
+            nav_link  = maps_link
+
+        item_lines = []
         for item in items:
             price = item.get("price", 0) * item.get("quantity", 1)
-            lines.append(f"• {item['name']} × {item['quantity']} — {price:,} сум")
-        lines.append(f"\n💰 Итого: <b>{total:,} сум</b>")
+            item_lines.append(f"▪️ {item['name']}\n   {item['quantity']} шт × {item.get('price',0):,} = <b>{price:,} сум</b>")
+
+        lines = [
+            f"🧾 <b>Новый заказ #{order_id}</b>",
+            "",
+            f"👤 <b>{full}</b>  ({uname})",
+            f"📞 {phone}",
+            f"💳 {'💵 Наличными' if payment == 'cash' else '💳 Картой'}",
+        ]
+        if comment:
+            lines.append(f"💬 <i>{comment}</i>")
+        lines += [
+            "",
+            "─────────────────",
+            "<b>🛍 Состав заказа:</b>",
+            "",
+            "\n\n".join(item_lines),
+            "",
+            f"💰 <b>Итого: {total:,} сум</b>",
+            "",
+            "─────────────────",
+            "<b>📍 Адрес доставки:</b>",
+            f"<code>{addr_text or '—'}</code>",
+            "",
+            f'🗺 <a href="{maps_link}">Открыть на Яндекс.Картах</a>',
+            f'🚗 <a href="{nav_link}">Маршрут в Яндекс.Навигаторе</a>',
+        ]
+
         tg_request("sendMessage", {
             "chat_id": int(ORDERS_CHAT_ID),
             "text": "\n".join(lines),
             "parse_mode": "HTML",
+            "disable_web_page_preview": True,
         })
 
 
