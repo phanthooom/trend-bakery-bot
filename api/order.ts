@@ -176,7 +176,7 @@ export default async function handler(req: any, res: any) {
     }
 
     // Отправка в цифровой двойник (Twin Bridge)
-    const TWIN_WEBHOOK_URL = process.env.TWIN_WEBHOOK_URL || 'http://localhost:5173/api/orders';
+    const TWIN_WEBHOOK_URL = process.env.TWIN_WEBHOOK_URL || 'https://4a7d-93-188-81-148.ngrok-free.app/api/orders';
     try {
       const twinPayload = {
         orderId: `TG-${orderId}`,
@@ -195,7 +195,10 @@ export default async function handler(req: any, res: any) {
 
       await fetch(TWIN_WEBHOOK_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true',
+        },
         body: JSON.stringify(twinPayload),
       });
     } catch (err) {
