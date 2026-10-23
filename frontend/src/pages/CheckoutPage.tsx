@@ -168,11 +168,11 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-64">
+    <div className="flex flex-col min-h-screen bg-gray-50" style={{ paddingBottom: '260px' }}>
       {/* Header */}
       <div 
         className="px-4 pb-3 bg-white border-b border-gray-100 flex items-center gap-3 sticky top-0 z-40" 
-        style={{ paddingTop: `max(${safeTop}px, 12px)` }}
+        style={{ paddingTop: safeTop > 0 ? `${safeTop}px` : `max(calc(env(safe-area-inset-top) + 28px), 16px)` }}
       >
         <button 
           onClick={() => { haptic.light(); navigate('/cart') }}

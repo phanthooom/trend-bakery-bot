@@ -43,7 +43,7 @@ export default function MenuPage() {
       {/* Header */}
       <div
         className="px-4 pb-2 bg-white sticky top-0 z-40 border-b border-gray-100"
-        style={{ paddingTop: `max(${safeTop}px, 12px)` }}
+        style={{ paddingTop: safeTop > 0 ? `${safeTop}px` : `max(calc(env(safe-area-inset-top) + 28px), 16px)` }}
       >
         <div className="flex items-center justify-between mb-2.5 pt-1.5">
           <div className="flex items-center gap-2">

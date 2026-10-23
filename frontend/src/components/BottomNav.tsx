@@ -81,7 +81,7 @@ export default function BottomNav() {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50"
-      style={{ paddingBottom: `${Math.max(safeBottom, 8)}px` }}
+      style={{ paddingBottom: `max(${safeBottom}px, calc(env(safe-area-inset-bottom) + 4px), 8px)` }}
     >
       <div className="flex">
         {tabs.map((tab) => {

@@ -25,6 +25,7 @@ type TwaExtended = {
   setBackgroundColor?: (color: string) => void
   onEvent?: (event: string, cb: (...args: any[]) => void) => void
   offEvent?: (event: string, cb: (...args: any[]) => void) => void
+  platform?: string
   initData?: string
 }
 
@@ -47,6 +48,7 @@ export default function App() {
 
   const calculateInsets = useCallback((): SafeAreaData => {
     const wa = (window as unknown as { Telegram?: { WebApp?: TwaExtended } })?.Telegram?.WebApp
+    const isInsideTelegram = Boolean(wa?.initData || wa?.version)
     const isFullscreen = Boolean(wa?.isFullscreen)
     const canFullscreen = typeof wa?.requestFullscreen === 'function'
 
@@ -60,23 +62,24 @@ export default function App() {
     const systemLeft = Number(wa?.safeAreaInset?.left) || 0
 
     // Top inset calculation:
-    // In Telegram Mini Apps fullscreen mode, Telegram's floating capsule buttons
-    // [✕ Закрыть] and [∨ ···] sit at the top.
-    // contentSafeAreaInset.top is provided by Telegram to clear them (usually 76-84px on iOS Dynamic Island).
-    // If contentSafeAreaInset is reported (> 0), use it directly (+ 2px micro-gap).
-    // Otherwise fallback to systemTop + 24px or minimum 76px.
-    // In normal (non-fullscreen) sheet mode, the Telegram top bar is outside the webview,
-    // so top inset is 0 (or minimal system status bar if any).
+    // In Telegram Mini Apps (both fullscreen and expanded sheet), the top native controls
+    // (floating capsules [✕ Закрыть] and [∨ ···] or top bar) sit over the content on mobile.
+    // On iPhone (Dynamic Island / Notch):
+    // - Status bar / Island: 47-54px
+    // - Floating capsules: end around Y ≈ 76-80px
+    // - Optimal content start: 86-88px (leaves clean ~8px margin below buttons without huge empty void)
     let top = 0
-    if (isFullscreen) {
+    if (isInsideTelegram) {
       if (contentTop > 0) {
-        top = contentTop + 2
+        top = Math.max(contentTop + 6, 86)
+      } else if (systemTop > 0) {
+        top = Math.max(systemTop + 30, 86)
       } else {
-        top = Math.max(systemTop + 24, 76)
+        const isIOS = wa?.platform === 'ios' || /iPhone|iPad|iPod/i.test(navigator.userAgent)
+        top = isIOS ? 86 : 56
       }
     } else {
-      const isInsideTelegram = Boolean(wa?.initData || wa?.version)
-      top = isInsideTelegram ? Math.max(contentTop, systemTop, 0) : 0
+      top = 0
     }
 
     const bottom = Math.max(contentBottom, systemBottom, 0)
