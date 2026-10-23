@@ -168,11 +168,11 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-44">
+    <div className="flex flex-col min-h-screen bg-gray-50 pb-64">
       {/* Header */}
       <div 
         className="px-4 pb-3 bg-white border-b border-gray-100 flex items-center gap-3 sticky top-0 z-40" 
-        style={{ paddingTop: `calc(${safeTop}px + 8px)` }}
+        style={{ paddingTop: `max(${safeTop}px, 12px)` }}
       >
         <button 
           onClick={() => { haptic.light(); navigate('/cart') }}
@@ -324,8 +324,8 @@ export default function CheckoutPage() {
 
       {/* Submit Button Sticky Bar */}
       <div
-        className="fixed left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 px-4 py-3 z-40 shadow-lg"
-        style={{ bottom: `max(${safeBottom + 10}px, calc(env(safe-area-inset-bottom) + 10px))` }}
+        className="fixed left-0 right-0 bottom-0 bg-white border-t border-gray-100 px-4 pt-3 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]"
+        style={{ paddingBottom: `max(${safeBottom + 12}px, calc(env(safe-area-inset-bottom) + 12px), 20px)` }}
       >
         <div className="flex items-center justify-between mb-2.5 px-1">
           <span className="text-gray-500 text-sm font-medium">{t('total')}:</span>
@@ -334,7 +334,7 @@ export default function CheckoutPage() {
         <button
           onClick={handleOrder}
           disabled={isSubmitting}
-          className="w-full bg-[#C8102E] text-white py-4 rounded-2xl font-bold text-base shadow-lg shadow-red-200 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full bg-[#C8102E] text-white py-3.5 rounded-2xl font-bold text-base shadow-lg shadow-red-200 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

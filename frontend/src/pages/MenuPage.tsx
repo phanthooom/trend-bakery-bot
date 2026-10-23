@@ -39,13 +39,13 @@ export default function MenuPage() {
   })
 
   return (
-    <div className="flex flex-col min-h-screen bg-white pb-20">
+    <div className="flex flex-col min-h-screen bg-white pb-24">
       {/* Header */}
       <div
         className="px-4 pb-2 bg-white sticky top-0 z-40 border-b border-gray-100"
-        style={{ paddingTop: `${safeTop}px` }}
+        style={{ paddingTop: `max(${safeTop}px, 12px)` }}
       >
-        <div className="flex items-center justify-between mb-3 pt-2">
+        <div className="flex items-center justify-between mb-2.5 pt-1.5">
           <div className="flex items-center gap-2">
             <img
               src="/logo.png"

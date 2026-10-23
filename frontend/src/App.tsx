@@ -60,16 +60,23 @@ export default function App() {
     const systemLeft = Number(wa?.safeAreaInset?.left) || 0
 
     // Top inset calculation:
-    // In Fullscreen mode:
-    // 1. Dynamic Island / Status Bar (~50-54px)
-    // 2. Telegram native floating capsules [✕ Закрыть] and [∨ ···] (~38px height + margins)
-    // To ensure NO text or buttons ever collide with the capsules, the content MUST start at 104px minimum!
+    // In Telegram Mini Apps fullscreen mode, Telegram's floating capsule buttons
+    // [✕ Закрыть] and [∨ ···] sit at the top.
+    // contentSafeAreaInset.top is provided by Telegram to clear them (usually 76-84px on iOS Dynamic Island).
+    // If contentSafeAreaInset is reported (> 0), use it directly (+ 2px micro-gap).
+    // Otherwise fallback to systemTop + 24px or minimum 76px.
+    // In normal (non-fullscreen) sheet mode, the Telegram top bar is outside the webview,
+    // so top inset is 0 (or minimal system status bar if any).
     let top = 0
     if (isFullscreen) {
-      top = Math.max(contentTop + 12, systemTop + 50, 104)
+      if (contentTop > 0) {
+        top = contentTop + 2
+      } else {
+        top = Math.max(systemTop + 24, 76)
+      }
     } else {
       const isInsideTelegram = Boolean(wa?.initData || wa?.version)
-      top = isInsideTelegram ? Math.max(contentTop, systemTop, 16) : 0
+      top = isInsideTelegram ? Math.max(contentTop, systemTop, 0) : 0
     }
 
     const bottom = Math.max(contentBottom, systemBottom, 0)

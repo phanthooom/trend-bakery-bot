@@ -56,11 +56,11 @@ export default function CartPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-44">
+    <div className="flex flex-col min-h-screen bg-gray-50 pb-60">
       {/* Header */}
       <div 
         className="px-4 pb-3 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-40" 
-        style={{ paddingTop: `calc(${safeTop}px + 8px)` }}
+        style={{ paddingTop: `max(${safeTop}px, 12px)` }}
       >
         <h1 className="font-bold text-xl text-gray-900">{t('cart')}</h1>
         <span className="text-xs font-semibold px-2.5 py-1 bg-red-50 text-[#C8102E] rounded-full">

@@ -11,6 +11,12 @@ export default function BottomNav() {
   const { t } = useTranslation()
   const { bottom: safeBottom } = useSafeArea()
 
+  // Hide BottomNav on Checkout, Map and Admin pages
+  const hideOn = ['/checkout', '/map', '/admin']
+  if (hideOn.includes(location.pathname)) {
+    return null
+  }
+
   const tabs = [
     {
       path: '/',
