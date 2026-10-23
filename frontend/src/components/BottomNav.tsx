@@ -2,12 +2,14 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import { haptic } from '../utils/haptic'
 import { useTranslation } from '../i18n'
+import { useSafeArea } from '../context/SafeAreaContext'
 
 export default function BottomNav() {
   const navigate = useNavigate()
   const location = useLocation()
   const cartCount = useStore((s) => s.cartCount())
   const { t } = useTranslation()
+  const { bottom: safeBottom } = useSafeArea()
 
   const tabs = [
     {
@@ -73,7 +75,7 @@ export default function BottomNav() {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      style={{ paddingBottom: `${Math.max(safeBottom, 8)}px` }}
     >
       <div className="flex">
         {tabs.map((tab) => {

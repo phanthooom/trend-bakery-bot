@@ -39,7 +39,7 @@ export default function MapPage() {
   const ymapsRef = useRef<any>(null)
   const reverseGeocodeRef = useRef<((c: [number, number]) => void) | null>(null)
 
-  const btnTop = `max(${safeTop + 12}px, calc(env(safe-area-inset-top) + 12px))`
+  const btnTop = `${Math.max(safeTop, 12) + 8}px`
 
   // Clean address parser from Nominatim data
   const formatNominatim = (data: any): string => {

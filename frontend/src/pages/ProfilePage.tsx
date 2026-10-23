@@ -126,7 +126,7 @@ export default function ProfilePage() {
       {/* Header */}
       <div
         className="px-4 pb-3 bg-white border-b border-gray-100"
-        style={{ paddingTop: `max(${safeTop + 16}px, calc(env(safe-area-inset-top) + 16px))` }}
+        style={{ paddingTop: `${safeTop}px` }}
       >
         <h1 className="font-bold text-xl text-gray-900">{t('profile')}</h1>
 

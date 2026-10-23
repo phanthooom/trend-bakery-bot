@@ -23,7 +23,7 @@ export default function MenuPage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isAddressesOpen, setIsAddressesOpen] = useState(false)
   const { address, deliveryType, setDeliveryType, products, isLoadingProducts, fetchProducts } = useStore()
-  const { top: safeTop } = useSafeArea()
+  const { top: safeTop, isFullscreen, canFullscreen, requestFullscreen } = useSafeArea()
 
   useEffect(() => {
     fetchProducts()
@@ -43,7 +43,7 @@ export default function MenuPage() {
       {/* Header */}
       <div
         className="px-4 pb-2 bg-white sticky top-0 z-40 border-b border-gray-100"
-        style={{ paddingTop: `max(${safeTop + 12}px, calc(env(safe-area-inset-top) + 12px))` }}
+        style={{ paddingTop: `${safeTop}px` }}
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -58,7 +58,19 @@ export default function MenuPage() {
             />
             <span className="font-bold text-gray-900 text-lg">Trend 🥨 Bakery</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {canFullscreen && !isFullscreen && (
+              <button
+                onClick={requestFullscreen}
+                className="flex items-center gap-1 px-2.5 py-1.5 bg-red-50 text-[#C8102E] border border-red-200 rounded-full text-xs font-bold active:scale-95 transition-transform"
+                title="Развернуть на весь экран"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>Во весь экран</span>
+              </button>
+            )}
             <LanguageDropdown />
             <button 
               onClick={() => {
