@@ -60,19 +60,16 @@ export default function App() {
     const systemLeft = Number(wa?.safeAreaInset?.left) || 0
 
     // Top inset calculation:
-    // When in fullscreen, Telegram capsules (Close/Menu) and the device notch/Dynamic Island
-    // require at least 52-58px of top clearance so headers NEVER collide or overlap.
+    // In Fullscreen mode:
+    // 1. Dynamic Island / Status Bar (~50-54px)
+    // 2. Telegram native floating capsules [✕ Закрыть] and [∨ ···] (~38px height + margins)
+    // To ensure NO text or buttons ever collide with the capsules, the content MUST start at 104px minimum!
     let top = 0
-    if (contentTop > 0) {
-      // Content safe area provided by Bot API 8.0 clears both device chrome and Telegram buttons
-      top = contentTop
-    } else if (systemTop > 0) {
-      top = isFullscreen ? Math.max(systemTop + 8, 54) : systemTop
-    } else if (isFullscreen) {
-      top = 54 // Safe default for dynamic island / notch + floating controls
+    if (isFullscreen) {
+      top = Math.max(contentTop + 12, systemTop + 50, 104)
     } else {
       const isInsideTelegram = Boolean(wa?.initData || wa?.version)
-      top = isInsideTelegram ? 14 : 0
+      top = isInsideTelegram ? Math.max(contentTop, systemTop, 16) : 0
     }
 
     const bottom = Math.max(contentBottom, systemBottom, 0)
@@ -130,9 +127,9 @@ export default function App() {
     }
 
     tryEnterFullscreen()
-    const fsTimer1 = setTimeout(tryEnterFullscreen, 200)
-    const fsTimer2 = setTimeout(tryEnterFullscreen, 600)
-    const fsTimer3 = setTimeout(tryEnterFullscreen, 1200)
+    const fsTimer1 = setTimeout(tryEnterFullscreen, 150)
+    const fsTimer2 = setTimeout(tryEnterFullscreen, 500)
+    const fsTimer3 = setTimeout(tryEnterFullscreen, 1000)
 
     // User gesture fallback: If client enforces user interaction for fullscreen,
     // the very first tap anywhere on screen will enter fullscreen.
@@ -147,10 +144,10 @@ export default function App() {
     window.addEventListener('touchstart', onUserInteraction, { passive: true })
 
     applyInsets()
-    const t1 = setTimeout(applyInsets, 100)
-    const t2 = setTimeout(applyInsets, 350)
-    const t3 = setTimeout(applyInsets, 800)
-    const t4 = setTimeout(applyInsets, 1500)
+    const t1 = setTimeout(applyInsets, 50)
+    const t2 = setTimeout(applyInsets, 200)
+    const t3 = setTimeout(applyInsets, 600)
+    const t4 = setTimeout(applyInsets, 1200)
 
     // Event listeners
     wa.onEvent?.('safeAreaChanged', applyInsets)

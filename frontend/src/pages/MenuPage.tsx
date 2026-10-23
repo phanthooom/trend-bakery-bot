@@ -45,7 +45,7 @@ export default function MenuPage() {
         className="px-4 pb-2 bg-white sticky top-0 z-40 border-b border-gray-100"
         style={{ paddingTop: `${safeTop}px` }}
       >
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3 pt-2">
           <div className="flex items-center gap-2">
             <img
               src="/logo.png"
