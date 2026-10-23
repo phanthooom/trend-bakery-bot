@@ -145,6 +145,7 @@ export default function CheckoutPage() {
         </div>
 
         <div className="w-full max-w-sm flex flex-col gap-3">
+          <a href="https://bakery-digital-twin.vercel.app/?eq=oven-1" className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold text-base shadow-lg active:scale-98 transition-transform flex items-center justify-center gap-2 no-underline"><span>🏭</span><span>Смотреть заказ в 3D-цехе</span></a>
           <button
             onClick={() => {
               navigate('/')

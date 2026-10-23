@@ -16,6 +16,16 @@ export default async function handler(req: any, res: any) {
   setCors(req, res);
 
   if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (req.method === 'GET') {
+    try {
+      const db = getDb();
+      const snap = await db.collection('twin_orders').orderBy('createdAt', 'desc').limit(10).get();
+      return res.status(200).json(snap.docs.map((d) => d.data()));
+    } catch {
+      return res.status(200).json([]);
+    }
+  }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   if (!rateLimit(`order:${clientIp(req)}`, 5, 60_000)) {
@@ -192,6 +202,12 @@ export default async function handler(req: any, res: any) {
         })),
         createdAt: Date.now(),
       };
+
+      try {
+        await db.collection('twin_orders').doc(String(orderId)).set(twinPayload);
+      } catch (e) {
+        console.error('Firestore twin_orders save error:', e);
+      }
 
       await fetch(TWIN_WEBHOOK_URL, {
         method: 'POST',

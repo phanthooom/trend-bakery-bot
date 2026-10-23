@@ -60,7 +60,8 @@ def handle_start(chat_id: int) -> None:
         "parse_mode": "HTML",
         "reply_markup": {
             "inline_keyboard": [[
-                {"text": "🥐 Открыть магазин", "web_app": {"url": WEBAPP_URL}}
+                {"text": "🥐 Открыть магазин", "web_app": {"url": WEBAPP_URL}},
+                {"text": "🏭 3D Цех", "web_app": {"url": "https://bakery-digital-twin.vercel.app"}}
             ]]
         },
     })
