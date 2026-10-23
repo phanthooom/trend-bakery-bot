@@ -175,6 +175,33 @@ export default async function handler(req: any, res: any) {
       }
     }
 
+    // Отправка в цифровой двойник (Twin Bridge)
+    const TWIN_WEBHOOK_URL = process.env.TWIN_WEBHOOK_URL || 'http://localhost:5173/api/orders';
+    try {
+      const twinPayload = {
+        orderId: `TG-${orderId}`,
+        clientName: fullName,
+        phone,
+        address: addressText || 'Ташкент',
+        payment,
+        total,
+        items: validItems.map((it) => ({
+          name: it.name,
+          quantity: it.quantity,
+          price: it.price,
+        })),
+        createdAt: Date.now(),
+      };
+
+      await fetch(TWIN_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(twinPayload),
+      });
+    } catch (err) {
+      console.error('Ошибка отправки заказа в цифровой двойник:', err);
+    }
+
     res.status(200).json({ success: true });
   } catch (error) {
     handleError(res, error);

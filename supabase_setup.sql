@@ -18,3 +18,22 @@ INSERT INTO public.products (name, description, price, image, category)
 VALUES 
 ('Круассан классический', 'Воздушный французский круассан со сливочным маслом', 15000, 'https://images.unsplash.com/photo-1555507036-ab1f4022115c?w=500', 'home'),
 ('Хлеб на закваске', 'Хрустящий ремесленный хлеб', 20000, 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500', 'retail');
+
+-- 4. Создаем таблицу для заказов
+CREATE TABLE IF NOT EXISTS public.orders (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  user_id bigint,
+  username text,
+  first_name text,
+  items jsonb NOT NULL DEFAULT '[]',
+  total integer NOT NULL DEFAULT 0,
+  address jsonb NOT NULL DEFAULT '{}',
+  status text NOT NULL DEFAULT 'new'
+);
+
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "service_role full access" ON public.orders TO service_role USING (true) WITH CHECK (true);
+
+-- 5. Включаем Supabase Realtime для заказов (чтобы 3D цифровой двойник получал их моментально)
+ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;

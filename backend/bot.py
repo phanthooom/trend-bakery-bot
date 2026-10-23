@@ -102,6 +102,32 @@ async def api_order_handler(request: web.Request):
         except Exception as e:
             logging.error(f"Failed to send to admin: {e}")
 
+    # Отправка в цифровой двойник (Twin Bridge)
+    twin_webhook_url = os.getenv("TWIN_WEBHOOK_URL", "http://localhost:5173/api/orders")
+    try:
+        twin_payload = {
+            "orderId": f"TG-{int(asyncio.get_event_loop().time() * 1000) % 10000:04d}",
+            "clientName": full_name,
+            "phone": phone,
+            "address": address.get("street", "Ташкент") if isinstance(address, dict) else "Ташкент",
+            "payment": payment,
+            "total": total,
+            "items": [
+                {
+                    "name": item.get("name"),
+                    "quantity": item.get("quantity"),
+                    "price": item.get("price")
+                }
+                for item in items
+            ],
+            "createdAt": int(asyncio.get_event_loop().time() * 1000)
+        }
+        async with web.ClientSession() as session:
+            async with session.post(twin_webhook_url, json=twin_payload, timeout=web.ClientTimeout(total=2)) as resp:
+                pass
+    except Exception as e:
+        logging.warning(f"Digital Twin webhook skipped or failed: {e}")
+
     return web.json_response({"success": True}, headers={"Access-Control-Allow-Origin": "*"})
 
 async def main():

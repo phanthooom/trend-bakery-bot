@@ -24,3 +24,6 @@ create policy "service_role full access"
 -- Index for dashboard queries
 create index orders_created_at_idx on orders (created_at desc);
 create index orders_status_idx     on orders (status);
+
+-- Enable Realtime publication for Digital Twin integration
+alter publication supabase_realtime add table orders;
