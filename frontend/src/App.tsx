@@ -18,6 +18,8 @@ type TwaExtended = {
   isFullscreen?: boolean
   safeAreaInset?: { top?: number; bottom?: number }
   contentSafeAreaInset?: { top?: number; bottom?: number }
+  setHeaderColor?: (color: string) => void
+  setBackgroundColor?: (color: string) => void
   onEvent?: (event: string, cb: () => void) => void
   offEvent?: (event: string, cb: () => void) => void
 }
@@ -38,18 +40,26 @@ export default function App() {
     try { wa.ready?.() } catch (e) {}
     try { wa.expand?.() } catch (e) {}
     try { wa.disableVerticalSwipes?.() } catch (e) {}
+    try { wa.setHeaderColor?.('#ffffff') } catch (e) {}
+    try { wa.setBackgroundColor?.('#ffffff') } catch (e) {}
 
-    const tryFullscreen = () => { try { wa.requestFullscreen?.() } catch (e) {} }
+    const tryFullscreen = () => {
+      try {
+        wa.expand?.()
+        wa.requestFullscreen?.()
+      } catch (e) {}
+    }
+
     tryFullscreen()
-    const tf1 = setTimeout(tryFullscreen, 300)
-    const tf2 = setTimeout(tryFullscreen, 1000)
+    const tf1 = setTimeout(tryFullscreen, 250)
+    const tf2 = setTimeout(tryFullscreen, 800)
 
     const updateSafeArea = () => {
       try {
         const contentTop = wa.contentSafeAreaInset?.top ?? 0
         const systemTop = wa.safeAreaInset?.top ?? 0
-        const top = contentTop + systemTop
-        const bottom = wa.safeAreaInset?.bottom ?? 0
+        const top = Math.max(contentTop, systemTop, 0)
+        const bottom = Math.max(wa.safeAreaInset?.bottom ?? 0, wa.contentSafeAreaInset?.bottom ?? 0, 0)
         setSafeTop(top)
         setSafeBottom(bottom)
         document.documentElement.style.setProperty('--safe-top', `${top}px`)
